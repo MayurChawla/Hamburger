@@ -448,6 +448,189 @@ query {
 
 ---
 
+## 🔐 Authentication & Authorization
+
+### 12. Login (Get Authentication Token)
+
+**Mutation:**
+```graphql
+mutation {
+  login(
+    usernameOrEmail: "admin"
+    password: "admin123"
+  ) {
+    token
+    user {
+      id
+      username
+      email
+      role
+      employeeId
+    }
+  }
+}
+```
+
+**JSON for Postman/cURL:**
+```json
+{
+  "query": "mutation { login(usernameOrEmail: \"admin\", password: \"admin123\") { token user { id username email role employeeId } } }"
+}
+```
+
+**Default Credentials:**
+- **Admin:** username: `admin`, password: `admin123`
+- **Employee:** username: `john_doe`, password: `employee123`
+
+---
+
+### 13. Register New User
+
+**Mutation:**
+```graphql
+mutation {
+  register(
+    username: "newuser"
+    email: "newuser@example.com"
+    password: "password123"
+    role: EMPLOYEE
+  ) {
+    token
+    user {
+      id
+      username
+      email
+      role
+    }
+  }
+}
+```
+
+**JSON for Postman/cURL:**
+```json
+{
+  "query": "mutation { register(username: \"newuser\", email: \"newuser@example.com\", password: \"password123\", role: EMPLOYEE) { token user { id username email role } } }"
+}
+```
+
+---
+
+### 14. Get Current User
+
+**Query (requires authentication):**
+```graphql
+query {
+  me {
+    id
+    username
+    email
+    role
+    employeeId
+  }
+}
+```
+
+**JSON for Postman/cURL (with Authorization header):**
+```json
+{
+  "query": "query { me { id username email role employeeId } }"
+}
+```
+
+**Headers:**
+```
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+---
+
+### 15. Query with Authentication (Admin Example)
+
+**Query:**
+```graphql
+query {
+  employees {
+    id
+    name
+    age
+    class
+  }
+}
+```
+
+**JSON for Postman/cURL:**
+```json
+{
+  "query": "query { employees { id name age class } }"
+}
+```
+
+**Headers:**
+```
+Authorization: Bearer YOUR_ADMIN_TOKEN_HERE
+```
+
+---
+
+### 16. Employee Accessing Their Own Data
+
+**Query:**
+```graphql
+query {
+  employee(id: "1") {
+    id
+    name
+    age
+    class
+    attendance {
+      date
+      present
+    }
+  }
+}
+```
+
+**JSON for Postman/cURL:**
+```json
+{
+  "query": "query { employee(id: \"1\") { id name age class attendance { date present } } }"
+}
+```
+
+**Headers:**
+```
+Authorization: Bearer YOUR_EMPLOYEE_TOKEN_HERE
+```
+
+---
+
+### 📋 Role-Based Access Control
+
+**Admin Role (`admin`):**
+- ✅ Can view all employees
+- ✅ Can create employees
+- ✅ Can update any employee
+- ✅ Can delete employees
+- ✅ Can mark attendance for any employee
+- ✅ Can query employees by class
+- ✅ Can use pagination and sorting on all queries
+
+**Employee Role (`employee`):**
+- ❌ Cannot view all employees
+- ❌ Cannot create employees
+- ❌ Cannot delete employees
+- ✅ Can view their own employee data (via `employee` query with their `employeeId`)
+- ✅ Can update their own employee data (except `class` field)
+- ✅ Can mark attendance for themselves only
+- ❌ Cannot query employees by class
+- ❌ Cannot use `employees` or `employeesByClass` queries
+
+**Authentication Required:**
+- All queries except `hello`, `login`, and `register` require authentication
+- Include JWT token in `Authorization` header: `Bearer YOUR_TOKEN`
+
+---
+
 ## ✅ Expected Response Format
 
 ### Standard Query Response
@@ -545,16 +728,22 @@ If there's an error:
 
 - [ ] Server is running (`npm run dev`)
 - [ ] Health check works: `http://localhost:4000/health`
-- [ ] Can query all employees
-- [ ] Can query employee by ID
-- [ ] Can create a new employee
-- [ ] Can update an employee
-- [ ] Can mark attendance
-- [ ] Can delete an employee
-- [ ] Can query employees with pagination
-- [ ] Can query employees with sorting
-- [ ] Can use employeesConnection for paginated results
-- [ ] Can query employeesByClass with pagination and sorting
+- [ ] Can login as admin
+- [ ] Can login as employee
+- [ ] Can register a new user
+- [ ] Can get current user info (`me` query)
+- [ ] Admin can query all employees
+- [ ] Admin can create a new employee
+- [ ] Admin can update any employee
+- [ ] Admin can delete an employee
+- [ ] Employee can query their own data
+- [ ] Employee can update their own data
+- [ ] Employee can mark their own attendance
+- [ ] Employee cannot access other employees' data
+- [ ] Can query employees with pagination (admin only)
+- [ ] Can query employees with sorting (admin only)
+- [ ] Can use employeesConnection for paginated results (admin only)
+- [ ] Can query employeesByClass with pagination and sorting (admin only)
 
 ---
 

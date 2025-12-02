@@ -2,6 +2,7 @@ const express = require('express');
 const { createHandler } = require('graphql-http/lib/use/express');
 const schema = require('./schema');
 const cors = require('cors');
+const auth = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -26,8 +27,35 @@ app.use((err, req, res, next) => {
   });
 });
 
-// GraphQL endpoint - handle POST requests
-app.post('/graphql', createHandler({ schema }));
+// GraphQL endpoint - handle POST requests with authentication
+app.post('/graphql', createHandler({ 
+  schema,
+  context: async (req) => {
+    let user = null;
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        const decoded = auth.verifyToken(token);
+        if (decoded) {
+          const userData = auth.getUserById(decoded.id);
+          if (userData) {
+            user = {
+              id: userData.id,
+              username: userData.username,
+              email: userData.email,
+              role: userData.role,
+              employeeId: userData.employeeId,
+            };
+          }
+        }
+      }
+    } catch (error) {
+      // User remains null if authentication fails
+    }
+    return { user };
+  },
+}));
 
 // GraphQL endpoint - handle GET requests with a simple query interface
 app.get('/graphql', (req, res) => {

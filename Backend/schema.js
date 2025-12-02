@@ -1,4 +1,5 @@
 const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLBoolean, GraphQLEnumType, GraphQLInputObjectType } = require('graphql');
+const auth = require('./auth');
 
 // Sample data (in a real app, this would come from a database)
 let employees = [
@@ -59,6 +60,36 @@ const EmployeeType = new GraphQLObjectType({
     class: { type: GraphQLString },
     subjects: { type: new GraphQLList(GraphQLString) },
     attendance: { type: new GraphQLList(AttendanceType) },
+  }),
+});
+
+// Role Enum
+const RoleEnum = new GraphQLEnumType({
+  name: 'Role',
+  values: {
+    ADMIN: { value: 'admin' },
+    EMPLOYEE: { value: 'employee' },
+  },
+});
+
+// User Type
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: () => ({
+    id: { type: GraphQLString },
+    username: { type: GraphQLString },
+    email: { type: GraphQLString },
+    role: { type: RoleEnum },
+    employeeId: { type: GraphQLString },
+  }),
+});
+
+// Auth Response Type
+const AuthResponseType = new GraphQLObjectType({
+  name: 'AuthResponse',
+  fields: () => ({
+    token: { type: GraphQLString },
+    user: { type: UserType },
   }),
 });
 
@@ -204,18 +235,57 @@ function applyPagination(data, pagination) {
   };
 }
 
+// Helper function to get user from context
+function getUserFromContext(context) {
+  return context.user || null;
+}
+
+// Authorization helpers
+function requireAuth(context) {
+  const user = getUserFromContext(context);
+  if (!user) {
+    throw new Error('Authentication required');
+  }
+  return user;
+}
+
+function requireRole(context, role) {
+  const user = requireAuth(context);
+  if (user.role !== role) {
+    throw new Error(`Access denied. ${role} role required.`);
+  }
+  return user;
+}
+
+function requireAdmin(context) {
+  return requireRole(context, 'admin');
+}
+
+function requireEmployee(context) {
+  return requireRole(context, 'employee');
+}
+
+function canAccessEmployeeData(context, employeeId) {
+  const user = requireAuth(context);
+  if (!auth.canAccessEmployee(user, employeeId)) {
+    throw new Error('Access denied. You can only access your own data.');
+  }
+  return user;
+}
+
 // Root Query
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    // Get all employees (with pagination and sorting support)
+    // Get all employees (with pagination and sorting support) - Admin only
     employees: {
       type: new GraphQLList(EmployeeType),
       args: {
         pagination: { type: PaginationInput },
         sort: { type: SortInput },
       },
-      resolve(parent, args) {
+      resolve(parent, args, context) {
+        requireAdmin(context);
         let result = [...employees];
         
         // Apply sorting
@@ -232,14 +302,15 @@ const RootQuery = new GraphQLObjectType({
         return result;
       },
     },
-    // Get all employees (paginated connection)
+    // Get all employees (paginated connection) - Admin only
     employeesConnection: {
       type: EmployeeConnectionType,
       args: {
         pagination: { type: PaginationInput },
         sort: { type: SortInput },
       },
-      resolve(parent, args) {
+      resolve(parent, args, context) {
+        requireAdmin(context);
         let result = [...employees];
         
         // Apply sorting
@@ -262,17 +333,19 @@ const RootQuery = new GraphQLObjectType({
         };
       },
     },
-    // Get employee by ID
+    // Get employee by ID - Admin can access all, Employee can only access their own
     employee: {
       type: EmployeeType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve(parent, args) {
+      resolve(parent, args, context) {
+        const user = requireAuth(context);
+        canAccessEmployeeData(context, args.id);
         return employees.find(employee => employee.id === args.id);
       },
     },
-    // Get employees by class (with pagination and sorting support)
+    // Get employees by class (with pagination and sorting support) - Admin only
     employeesByClass: {
       type: new GraphQLList(EmployeeType),
       args: {
@@ -280,7 +353,8 @@ const RootQuery = new GraphQLObjectType({
         pagination: { type: PaginationInput },
         sort: { type: SortInput },
       },
-      resolve(parent, args) {
+      resolve(parent, args, context) {
+        requireAdmin(context);
         let result = employees.filter(employee => employee.class === args.class);
         
         // Apply sorting
@@ -297,7 +371,7 @@ const RootQuery = new GraphQLObjectType({
         return result;
       },
     },
-    // Get employees by class (paginated connection)
+    // Get employees by class (paginated connection) - Admin only
     employeesByClassConnection: {
       type: EmployeeConnectionType,
       args: {
@@ -305,7 +379,8 @@ const RootQuery = new GraphQLObjectType({
         pagination: { type: PaginationInput },
         sort: { type: SortInput },
       },
-      resolve(parent, args) {
+      resolve(parent, args, context) {
+        requireAdmin(context);
         let result = employees.filter(employee => employee.class === args.class);
         
         // Apply sorting
@@ -335,6 +410,13 @@ const RootQuery = new GraphQLObjectType({
         return 'Hello from GraphQL API!';
       },
     },
+    // Get current user
+    me: {
+      type: UserType,
+      resolve(parent, args, context) {
+        return getUserFromContext(context);
+      },
+    },
   },
 });
 
@@ -342,7 +424,82 @@ const RootQuery = new GraphQLObjectType({
 const RootMutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
-    // Create employee
+    // Login mutation
+    login: {
+      type: AuthResponseType,
+      args: {
+        usernameOrEmail: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args) {
+        const user = auth.getUserByUsernameOrEmail(args.usernameOrEmail);
+        if (!user) {
+          throw new Error('Invalid credentials');
+        }
+
+        const isValidPassword = await auth.comparePassword(args.password, user.password);
+        if (!isValidPassword) {
+          throw new Error('Invalid credentials');
+        }
+
+        const token = auth.generateToken(user);
+        return {
+          token,
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            employeeId: user.employeeId,
+          },
+        };
+      },
+    },
+    // Register mutation
+    register: {
+      type: AuthResponseType,
+      args: {
+        username: { type: new GraphQLNonNull(GraphQLString) },
+        email: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+        role: { type: RoleEnum },
+        employeeId: { type: GraphQLString },
+      },
+      async resolve(parent, args) {
+        // Check if user already exists
+        const existingUser = auth.getUserByUsernameOrEmail(args.username) || 
+                            auth.getUserByUsernameOrEmail(args.email);
+        if (existingUser) {
+          throw new Error('User already exists');
+        }
+
+        // Hash password
+        const hashedPassword = await auth.hashPassword(args.password);
+
+        // Create user (only admin can create admin users, default is employee)
+        const role = args.role || 'employee';
+        const newUser = auth.createUser({
+          username: args.username,
+          email: args.email,
+          password: hashedPassword,
+          role: role,
+          employeeId: args.employeeId || null,
+        });
+
+        const token = auth.generateToken(newUser);
+        return {
+          token,
+          user: {
+            id: newUser.id,
+            username: newUser.username,
+            email: newUser.email,
+            role: newUser.role,
+            employeeId: newUser.employeeId,
+          },
+        };
+      },
+    },
+    // Create employee - Admin only
     createEmployee: {
       type: EmployeeType,
       args: {
@@ -351,7 +508,8 @@ const RootMutation = new GraphQLObjectType({
         class: { type: new GraphQLNonNull(GraphQLString) },
         subjects: { type: new GraphQLList(GraphQLString) },
       },
-      resolve(parent, args) {
+      resolve(parent, args, context) {
+        requireAdmin(context);
         const newEmployee = {
           id: String(employees.length + 1),
           name: args.name,
@@ -364,7 +522,7 @@ const RootMutation = new GraphQLObjectType({
         return newEmployee;
       },
     },
-    // Update employee
+    // Update employee - Admin can update all, Employee can only update their own
     updateEmployee: {
       type: EmployeeType,
       args: {
@@ -374,25 +532,35 @@ const RootMutation = new GraphQLObjectType({
         class: { type: GraphQLString },
         subjects: { type: new GraphQLList(GraphQLString) },
       },
-      resolve(parent, args) {
+      resolve(parent, args, context) {
+        const user = requireAuth(context);
+        canAccessEmployeeData(context, args.id);
+        
         const employee = employees.find(e => e.id === args.id);
         if (!employee) {
           throw new Error('Employee not found');
         }
+        
+        // Employees can only update certain fields (not class)
+        if (user.role === 'employee' && args.class) {
+          throw new Error('Employees cannot update class');
+        }
+        
         if (args.name) employee.name = args.name;
         if (args.age !== undefined) employee.age = args.age;
-        if (args.class) employee.class = args.class;
+        if (args.class && user.role === 'admin') employee.class = args.class;
         if (args.subjects) employee.subjects = args.subjects;
         return employee;
       },
     },
-    // Delete employee
+    // Delete employee - Admin only
     deleteEmployee: {
       type: EmployeeType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve(parent, args) {
+      resolve(parent, args, context) {
+        requireAdmin(context);
         const employeeIndex = employees.findIndex(e => e.id === args.id);
         if (employeeIndex === -1) {
           throw new Error('Employee not found');
@@ -402,7 +570,7 @@ const RootMutation = new GraphQLObjectType({
         return deletedEmployee;
       },
     },
-    // Mark attendance
+    // Mark attendance - Admin can mark for any employee, Employee can only mark their own
     markAttendance: {
       type: EmployeeType,
       args: {
@@ -410,7 +578,10 @@ const RootMutation = new GraphQLObjectType({
         date: { type: new GraphQLNonNull(GraphQLString) },
         present: { type: new GraphQLNonNull(GraphQLBoolean) },
       },
-      resolve(parent, args) {
+      resolve(parent, args, context) {
+        const user = requireAuth(context);
+        canAccessEmployeeData(context, args.id);
+        
         const employee = employees.find(e => e.id === args.id);
         if (!employee) {
           throw new Error('Employee not found');
