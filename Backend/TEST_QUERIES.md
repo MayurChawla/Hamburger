@@ -286,7 +286,171 @@ mutation {
 
 ---
 
+## 📄 Pagination & Sorting
+
+### 8. Get Employees with Pagination
+
+**Query:**
+```graphql
+query {
+  employees(
+    pagination: { page: 1, limit: 2 }
+    sort: { field: "name", order: ASC }
+  ) {
+    id
+    name
+    age
+    class
+  }
+}
+```
+
+**JSON for Postman/cURL:**
+```json
+{
+  "query": "query { employees(pagination: { page: 1, limit: 2 }, sort: { field: \"name\", order: ASC }) { id name age class } }"
+}
+```
+
+---
+
+### 9. Get Employees with Pagination (Connection Pattern)
+
+**Query:**
+```graphql
+query {
+  employeesConnection(
+    pagination: { page: 1, limit: 2 }
+    sort: { field: "age", order: DESC }
+  ) {
+    totalCount
+    pageInfo {
+      currentPage
+      perPage
+      totalPages
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      id
+      name
+      age
+      class
+    }
+    edges {
+      node {
+        id
+        name
+      }
+      cursor
+    }
+  }
+}
+```
+
+**JSON for Postman/cURL:**
+```json
+{
+  "query": "query { employeesConnection(pagination: { page: 1, limit: 2 }, sort: { field: \"age\", order: DESC }) { totalCount pageInfo { currentPage perPage totalPages hasNextPage hasPreviousPage } nodes { id name age class } edges { node { id name } cursor } } }"
+}
+```
+
+---
+
+### 10. Get Employees by Class with Pagination and Sorting
+
+**Query:**
+```graphql
+query {
+  employeesByClass(
+    class: "A"
+    pagination: { page: 1, limit: 10 }
+    sort: { field: "name", order: ASC }
+  ) {
+    id
+    name
+    age
+    class
+  }
+}
+```
+
+**JSON for Postman/cURL:**
+```json
+{
+  "query": "query { employeesByClass(class: \"A\", pagination: { page: 1, limit: 10 }, sort: { field: \"name\", order: ASC }) { id name age class } }"
+}
+```
+
+---
+
+### 11. Get Employees by Class with Connection Pattern
+
+**Query:**
+```graphql
+query {
+  employeesByClassConnection(
+    class: "A"
+    pagination: { page: 1, limit: 5 }
+    sort: { field: "age", order: DESC }
+  ) {
+    totalCount
+    pageInfo {
+      currentPage
+      perPage
+      totalPages
+      hasNextPage
+      hasPreviousPage
+    }
+    nodes {
+      id
+      name
+      age
+      class
+    }
+  }
+}
+```
+
+**JSON for Postman/cURL:**
+```json
+{
+  "query": "query { employeesByClassConnection(class: \"A\", pagination: { page: 1, limit: 5 }, sort: { field: \"age\", order: DESC }) { totalCount pageInfo { currentPage perPage totalPages hasNextPage hasPreviousPage } nodes { id name age class } } }"
+}
+```
+
+---
+
+### 📋 Pagination & Sorting Options
+
+**Pagination Input:**
+- `page` (Int, default: 1): Page number (1-indexed)
+- `limit` (Int, default: 10): Number of items per page
+- `offset` (Int): Number of items to skip (alternative to page)
+
+**Sort Input:**
+- `field` (String, required): Field to sort by - options: `id`, `name`, `age`, `class`
+- `order` (SortOrder, default: ASC): Sort order - `ASC` or `DESC`
+
+**Example with offset:**
+```graphql
+query {
+  employees(
+    pagination: { offset: 5, limit: 3 }
+    sort: { field: "age", order: DESC }
+  ) {
+    id
+    name
+    age
+  }
+}
+```
+
+---
+
 ## ✅ Expected Response Format
+
+### Standard Query Response
 
 All queries return data in this format:
 
@@ -308,6 +472,57 @@ All queries return data in this format:
         ]
       }
     ]
+  }
+}
+```
+
+### Paginated Connection Response
+
+When using `employeesConnection` or `employeesByClassConnection`, the response includes pagination metadata:
+
+```json
+{
+  "data": {
+    "employeesConnection": {
+      "totalCount": 3,
+      "pageInfo": {
+        "currentPage": 1,
+        "perPage": 2,
+        "totalPages": 2,
+        "hasNextPage": true,
+        "hasPreviousPage": false
+      },
+      "nodes": [
+        {
+          "id": "1",
+          "name": "John Doe",
+          "age": 30,
+          "class": "A"
+        },
+        {
+          "id": "2",
+          "name": "Jane Smith",
+          "age": 25,
+          "class": "B"
+        }
+      ],
+      "edges": [
+        {
+          "node": {
+            "id": "1",
+            "name": "John Doe"
+          },
+          "cursor": "1"
+        },
+        {
+          "node": {
+            "id": "2",
+            "name": "Jane Smith"
+          },
+          "cursor": "2"
+        }
+      ]
+    }
   }
 }
 ```
@@ -336,6 +551,10 @@ If there's an error:
 - [ ] Can update an employee
 - [ ] Can mark attendance
 - [ ] Can delete an employee
+- [ ] Can query employees with pagination
+- [ ] Can query employees with sorting
+- [ ] Can use employeesConnection for paginated results
+- [ ] Can query employeesByClass with pagination and sorting
 
 ---
 
