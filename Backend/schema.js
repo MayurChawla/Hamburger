@@ -1,20 +1,64 @@
-const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull } = require('graphql');
+const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLBoolean } = require('graphql');
 
 // Sample data (in a real app, this would come from a database)
-let users = [
-  { id: '1', name: 'John Doe', email: 'john@example.com', age: 30 },
-  { id: '2', name: 'Jane Smith', email: 'jane@example.com', age: 25 },
-  { id: '3', name: 'Bob Johnson', email: 'bob@example.com', age: 35 },
+let employees = [
+  { 
+    id: '1', 
+    name: 'John Doe', 
+    age: 30, 
+    class: 'A', 
+    subjects: ['Mathematics', 'Science', 'English'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: false },
+    ]
+  },
+  { 
+    id: '2', 
+    name: 'Jane Smith', 
+    age: 25, 
+    class: 'B', 
+    subjects: ['History', 'Geography', 'English'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: true },
+    ]
+  },
+  { 
+    id: '3', 
+    name: 'Bob Johnson', 
+    age: 35, 
+    class: 'A', 
+    subjects: ['Mathematics', 'Physics', 'Chemistry'],
+    attendance: [
+      { date: '2024-01-15', present: false },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: true },
+    ]
+  },
 ];
 
-// User Type
-const UserType = new GraphQLObjectType({
-  name: 'User',
+// Attendance Type
+const AttendanceType = new GraphQLObjectType({
+  name: 'Attendance',
+  fields: () => ({
+    date: { type: GraphQLString },
+    present: { type: GraphQLBoolean },
+  }),
+});
+
+// Employee Type
+const EmployeeType = new GraphQLObjectType({
+  name: 'Employee',
   fields: () => ({
     id: { type: GraphQLString },
     name: { type: GraphQLString },
-    email: { type: GraphQLString },
     age: { type: GraphQLInt },
+    class: { type: GraphQLString },
+    subjects: { type: new GraphQLList(GraphQLString) },
+    attendance: { type: new GraphQLList(AttendanceType) },
   }),
 });
 
@@ -22,21 +66,31 @@ const UserType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    // Get all users
-    users: {
-      type: new GraphQLList(UserType),
+    // Get all employees
+    employees: {
+      type: new GraphQLList(EmployeeType),
       resolve() {
-        return users;
+        return employees;
       },
     },
-    // Get user by ID
-    user: {
-      type: UserType,
+    // Get employee by ID
+    employee: {
+      type: EmployeeType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
       resolve(parent, args) {
-        return users.find(user => user.id === args.id);
+        return employees.find(employee => employee.id === args.id);
+      },
+    },
+    // Get employees by class
+    employeesByClass: {
+      type: new GraphQLList(EmployeeType),
+      args: {
+        class: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, args) {
+        return employees.filter(employee => employee.class === args.class);
       },
     },
     // Hello world query
@@ -53,59 +107,90 @@ const RootQuery = new GraphQLObjectType({
 const RootMutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
-    // Create user
-    createUser: {
-      type: UserType,
+    // Create employee
+    createEmployee: {
+      type: EmployeeType,
       args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
-        email: { type: new GraphQLNonNull(GraphQLString) },
-        age: { type: GraphQLInt },
+        age: { type: new GraphQLNonNull(GraphQLInt) },
+        class: { type: new GraphQLNonNull(GraphQLString) },
+        subjects: { type: new GraphQLList(GraphQLString) },
       },
       resolve(parent, args) {
-        const newUser = {
-          id: String(users.length + 1),
+        const newEmployee = {
+          id: String(employees.length + 1),
           name: args.name,
-          email: args.email,
-          age: args.age || null,
+          age: args.age,
+          class: args.class,
+          subjects: args.subjects || [],
+          attendance: [],
         };
-        users.push(newUser);
-        return newUser;
+        employees.push(newEmployee);
+        return newEmployee;
       },
     },
-    // Update user
-    updateUser: {
-      type: UserType,
+    // Update employee
+    updateEmployee: {
+      type: EmployeeType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
         name: { type: GraphQLString },
-        email: { type: GraphQLString },
         age: { type: GraphQLInt },
+        class: { type: GraphQLString },
+        subjects: { type: new GraphQLList(GraphQLString) },
       },
       resolve(parent, args) {
-        const user = users.find(u => u.id === args.id);
-        if (!user) {
-          throw new Error('User not found');
+        const employee = employees.find(e => e.id === args.id);
+        if (!employee) {
+          throw new Error('Employee not found');
         }
-        if (args.name) user.name = args.name;
-        if (args.email) user.email = args.email;
-        if (args.age !== undefined) user.age = args.age;
-        return user;
+        if (args.name) employee.name = args.name;
+        if (args.age !== undefined) employee.age = args.age;
+        if (args.class) employee.class = args.class;
+        if (args.subjects) employee.subjects = args.subjects;
+        return employee;
       },
     },
-    // Delete user
-    deleteUser: {
-      type: UserType,
+    // Delete employee
+    deleteEmployee: {
+      type: EmployeeType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
       resolve(parent, args) {
-        const userIndex = users.findIndex(u => u.id === args.id);
-        if (userIndex === -1) {
-          throw new Error('User not found');
+        const employeeIndex = employees.findIndex(e => e.id === args.id);
+        if (employeeIndex === -1) {
+          throw new Error('Employee not found');
         }
-        const deletedUser = users[userIndex];
-        users.splice(userIndex, 1);
-        return deletedUser;
+        const deletedEmployee = employees[employeeIndex];
+        employees.splice(employeeIndex, 1);
+        return deletedEmployee;
+      },
+    },
+    // Mark attendance
+    markAttendance: {
+      type: EmployeeType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLString) },
+        date: { type: new GraphQLNonNull(GraphQLString) },
+        present: { type: new GraphQLNonNull(GraphQLBoolean) },
+      },
+      resolve(parent, args) {
+        const employee = employees.find(e => e.id === args.id);
+        if (!employee) {
+          throw new Error('Employee not found');
+        }
+        // Check if attendance for this date already exists
+        const existingAttendance = employee.attendance.find(a => a.date === args.date);
+        if (existingAttendance) {
+          existingAttendance.present = args.present;
+        } else {
+          employee.attendance.push({
+            date: args.date,
+            present: args.present,
+          });
+        }
+        return employee;
       },
     },
   },
