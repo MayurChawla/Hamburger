@@ -77,6 +77,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   background: #1a1a1a;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  will-change: scroll-position;
+  -webkit-overflow-scrolling: touch;
 }
 
 .employee-grid {
@@ -84,6 +86,7 @@
   border-collapse: collapse;
   min-width: 1400px;
   background: #1a1a1a;
+  table-layout: auto;
 }
 
 .employee-grid thead {
@@ -111,12 +114,11 @@
 
 .employee-grid tbody tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
 }
 
 .employee-grid tbody tr:hover {
   background: rgba(100, 108, 255, 0.1);
-  transform: scale(1.001);
 }
 
 .employee-grid tbody tr:last-child {
