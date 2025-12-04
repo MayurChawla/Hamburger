@@ -10,7 +10,7 @@
 }
 
 .menu-container {
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -185,6 +185,20 @@
 
   .submenu-arrow {
     color: rgba(0, 0, 0, 0.6);
+  }
+
+  .hamburger-button-nav {
+    background: #646cff;
+    border: 1px solid rgba(100, 108, 255, 0.3);
+  }
+
+  .hamburger-button-nav:hover {
+    background: #535bf2;
+    border-color: rgba(100, 108, 255, 0.5);
+  }
+
+  .hamburger-button-nav span {
+    background: white;
   }
 }
 
