@@ -83,6 +83,25 @@
   transform: rotate(-45deg) translate(6px, -6px);
 }
 
+.company-name {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 60px;
+  color: rgba(255, 255, 255, 0.87);
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.company-name:hover {
+  color: #646cff;
+}
+
 .horizontal-menu-link {
   display: flex;
   align-items: center;
@@ -166,6 +185,14 @@
     background: #ffffff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .company-name {
+    color: #213547;
+  }
+
+  .company-name:hover {
+    color: #646cff;
   }
 
   .horizontal-menu-link {

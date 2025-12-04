@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import './HorizontalMenu.css';
 import './HamburgerMenu.css';
@@ -7,6 +8,7 @@ const HorizontalMenu = () => {
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [activeHamburgerSubmenu, setActiveHamburgerSubmenu] = useState(null);
+  const navigate = useNavigate();
 
   const menuItems = [
     // {
@@ -81,45 +83,45 @@ const HorizontalMenu = () => {
     {
       id: 'home',
       label: 'Home',
-      link: '#',
+      link: '/home',
       hasSubmenu: false
     },
     {
       id: 'products',
       label: 'Products',
-      link: '#',
+      link: '/products',
       hasSubmenu: true,
       submenu: [
-        { id: 'product1', label: 'Product 1', link: '#' },
-        { id: 'product2', label: 'Product 2', link: '#' },
-        { id: 'product3', label: 'Product 3', link: '#' }
+        { id: 'product1', label: 'Product 1', link: '/products/product1' },
+        { id: 'product2', label: 'Product 2', link: '/products/product2' },
+        { id: 'product3', label: 'Product 3', link: '/products/product3' }
       ]
     },
     {
       id: 'services',
       label: 'Services',
-      link: '#',
+      link: '/services',
       hasSubmenu: true,
       submenu: [
-        { id: 'service1', label: 'Service 1', link: '#' },
-        { id: 'service2', label: 'Service 2', link: '#' }
+        { id: 'service1', label: 'Service 1', link: '/services/service1' },
+        { id: 'service2', label: 'Service 2', link: '/services/service2' }
       ]
     },
     {
       id: 'about',
       label: 'About',
-      link: '#',
+      link: '/about',
       hasSubmenu: false
     },
     {
       id: 'contact',
       label: 'Contact',
-      link: '#',
+      link: '/contact',
       hasSubmenu: true,
       submenu: [
-        { id: 'email', label: 'Email Us', link: '#' },
-        { id: 'phone', label: 'Call Us', link: '#' },
-        { id: 'location', label: 'Location', link: '#' }
+        { id: 'email', label: 'Email Us', link: '/contact/email' },
+        { id: 'phone', label: 'Call Us', link: '/contact/phone' },
+        { id: 'location', label: 'Location', link: '/contact/location' }
       ]
     }
   ];
@@ -136,10 +138,19 @@ const HorizontalMenu = () => {
   };
 
   const handleHamburgerMenuItemClick = (e, item) => {
+    e.preventDefault();
     if (item.hasSubmenu) {
-      e.preventDefault();
       toggleHamburgerSubmenu(item.id);
+    } else {
+      setIsHamburgerOpen(false);
+      navigate(item.link);
     }
+  };
+
+  const handleSubmenuItemClick = (link) => {
+    setIsHamburgerOpen(false);
+    setActiveHamburgerSubmenu(null);
+    navigate(link);
   };
 
   const handleClickOutside = () => {
@@ -162,6 +173,18 @@ const HorizontalMenu = () => {
                 <span></span>
                 <span></span>
               </button>
+            </li>
+            <li className="horizontal-menu-item">
+              <a
+                href="/"
+                className="company-name"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/');
+                }}
+              >
+                Company Name
+              </a>
             </li>
           {menuItems.map((item) => (
             <li
@@ -224,7 +247,14 @@ const HorizontalMenu = () => {
               <ul className={`submenu ${activeHamburgerSubmenu === item.id ? 'open' : ''}`}>
                 {item.submenu.map((subItem) => (
                   <li key={subItem.id} className="submenu-item">
-                    <a href={subItem.link} className="submenu-link">
+                    <a 
+                      href={subItem.link} 
+                      className="submenu-link"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleSubmenuItemClick(subItem.link);
+                      }}
+                    >
                       {subItem.label}
                     </a>
                   </li>

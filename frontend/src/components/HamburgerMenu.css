@@ -178,7 +178,7 @@
   }
 
   .menu-link:hover {
-    background: rgba(100, 108, 255, 0.1);
+    /* background: rgba(100, 108, 255, 0.1); */
   }
 
   .menu-item {
