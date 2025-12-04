@@ -3,8 +3,8 @@
   top: 20px;
   right: 20px;
   z-index: 1002;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   background: #646cff;
   border: none;
   border-radius: 8px;
@@ -28,8 +28,8 @@
 }
 
 .theme-toggle svg {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
 }
 
 /* Light theme styles */
