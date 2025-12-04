@@ -105,7 +105,7 @@
 }
 
 /* Light mode support */
-@media (prefers-color-scheme: light) {
+[data-theme="light"] {
   .horizontal-menu {
     background: #ffffff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);

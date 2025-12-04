@@ -1,0 +1,54 @@
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1002;
+  width: 44px;
+  height: 44px;
+  background: #646cff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
+}
+
+.theme-toggle:hover {
+  background: #535bf2;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.4);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Light theme styles */
+[data-theme="light"] .theme-toggle {
+  background: #646cff;
+  color: white;
+}
+
+[data-theme="light"] .theme-toggle:hover {
+  background: #535bf2;
+}
+
+/* Dark theme styles */
+[data-theme="dark"] .theme-toggle {
+  background: #646cff;
+  color: white;
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  background: #535bf2;
+}
+

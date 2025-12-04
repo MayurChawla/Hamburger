@@ -153,7 +153,7 @@
 }
 
 /* Light mode support */
-@media (prefers-color-scheme: light) {
+[data-theme="light"] {
   .hamburger-menu {
     background: #ffffff;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);

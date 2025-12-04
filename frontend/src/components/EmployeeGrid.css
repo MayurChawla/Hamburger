@@ -255,7 +255,7 @@
 }
 
 /* Light mode support */
-@media (prefers-color-scheme: light) {
+[data-theme="light"] {
   .grid-wrapper {
     background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -346,10 +346,8 @@
   background: #535bf2;
 }
 
-@media (prefers-color-scheme: light) {
-  .grid-wrapper::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-  }
+[data-theme="light"] .grid-wrapper::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
 }
 
 /* Tile View Styles */
@@ -551,7 +549,7 @@
 }
 
 /* Light mode for tiles */
-@media (prefers-color-scheme: light) {
+[data-theme="light"] {
   .view-switcher {
     background: rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -867,7 +865,7 @@
 }
 
 /* Light mode for modal */
-@media (prefers-color-scheme: light) {
+[data-theme="light"] {
   .detail-modal {
     background: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -983,9 +981,7 @@
   background: #535bf2;
 }
 
-@media (prefers-color-scheme: light) {
-  .detail-modal::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-  }
+[data-theme="light"] .detail-modal::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
 }
 
