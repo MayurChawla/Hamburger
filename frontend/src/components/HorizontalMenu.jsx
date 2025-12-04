@@ -67,14 +67,14 @@ const HorizontalMenu = () => {
       setActiveSubmenu(null);
     }
   };
-
+  
   const handleMouseEnter = (itemId) => {
     const item = menuItems.find(i => i.id === itemId);
     if (item && item.hasSubmenu) {
       setActiveSubmenu(itemId);
     }
   };
-
+  
   const handleMouseLeave = () => {
     setActiveSubmenu(null);
   };
@@ -84,6 +84,12 @@ const HorizontalMenu = () => {
       id: 'home',
       label: 'Home',
       link: '/home',
+      hasSubmenu: false
+    },
+    {
+      id: 'employee',
+      label: 'Employees',
+      link: '/employees',
       hasSubmenu: false
     },
     {
