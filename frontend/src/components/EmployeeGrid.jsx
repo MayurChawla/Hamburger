@@ -4,6 +4,7 @@ import './EmployeeGrid.css';
 const EmployeeGrid = () => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'tile'
   const [openMenuId, setOpenMenuId] = useState(null); // Track which menu is open
+  const [selectedEmployee, setSelectedEmployee] = useState(null); // Track selected employee for detail view
   const [employees] = useState([
     {
       id: 1,
@@ -201,11 +202,25 @@ const EmployeeGrid = () => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
         setOpenMenuId(null);
+        setSelectedEmployee(null);
       }
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
+
+  const handleTileClick = (employee, e) => {
+    // Don't open modal if clicking on menu button or dropdown
+    if (e.target.closest('.tile-menu-container') || e.target.closest('.tile-menu-dropdown')) {
+      return;
+    }
+    setSelectedEmployee(employee);
+    setOpenMenuId(null); // Close any open menus
+  };
+
+  const closeDetailModal = () => {
+    setSelectedEmployee(null);
+  };
 
   return (
     <div className="employee-grid-container">
@@ -295,7 +310,11 @@ const EmployeeGrid = () => {
         <div className="tile-wrapper" onClick={handleClickOutside}>
           <div className="employee-tiles">
             {employees.map((employee) => (
-              <div key={employee.id} className="employee-tile">
+              <div 
+                key={employee.id} 
+                className="employee-tile"
+                onClick={(e) => handleTileClick(employee, e)}
+              >
                 <div className="tile-header">
                   <div className="tile-avatar">
                     {employee.name.split(' ').map(n => n[0]).join('')}
@@ -396,6 +415,123 @@ const EmployeeGrid = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Employee Detail Modal */}
+      {selectedEmployee && (
+        <div className="detail-modal-overlay" onClick={closeDetailModal}>
+          <div className="detail-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="detail-modal-close" onClick={closeDetailModal} aria-label="Close">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            
+            <div className="detail-modal-header">
+              <div className="detail-avatar-large">
+                {selectedEmployee.name.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div className="detail-header-info">
+                <h2 className="detail-name">{selectedEmployee.name}</h2>
+                <p className="detail-position">{selectedEmployee.position}</p>
+                <div className="detail-badges">
+                  <span className={`dept-badge dept-${selectedEmployee.department.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {selectedEmployee.department}
+                  </span>
+                  <span className={`status-badge status-${selectedEmployee.status.toLowerCase()}`}>
+                    {selectedEmployee.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="detail-modal-body">
+              <div className="detail-section">
+                <h3 className="detail-section-title">Contact Information</h3>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 4L8 8L14 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      </svg>
+                      Email
+                    </span>
+                    <span className="detail-value">{selectedEmployee.email}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3.33333 2.66667H6.66667L8 6L5.33333 7.33333C6.06667 9.06667 6.93333 9.93333 8.66667 10.6667L10 8L13.3333 9.33333V12.6667C13.3333 13.4 12.9333 14 12.4 14.2667C11.8667 14.5333 11.2 14.4 10.6667 14L3.33333 6.66667C2.8 6.13333 2.66667 5.46667 2.93333 4.93333C3.2 4.4 3.8 4 4.53333 4H7.86667L9.2 1.33333H3.33333C2.59667 1.33333 2 1.93 2 2.66667V12.6667" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      </svg>
+                      Phone
+                    </span>
+                    <span className="detail-value">{selectedEmployee.phone}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 8.66667C9.10457 8.66667 10 7.77124 10 6.66667C10 5.5621 9.10457 4.66667 8 4.66667C6.89543 4.66667 6 5.5621 6 6.66667C6 7.77124 6.89543 8.66667 8 8.66667Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                        <path d="M2.66667 6.66667C2.66667 5.5621 3.5621 4.66667 4.66667 4.66667H5.33333C5.70152 4.66667 6.05468 4.52619 6.32971 4.26914C6.60474 4.0121 6.78571 3.65443 6.83867 3.26267L7.00533 2.196C7.09467 1.46267 7.7 1 8.33333 1H8.66667C9.77124 1 10.6667 1.89543 10.6667 3V3.33333" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                        <path d="M13.3333 6.66667C13.3333 7.77124 12.4379 8.66667 11.3333 8.66667H10.6667C10.2985 8.66667 9.94532 8.80714 9.67029 9.06419C9.39526 9.32124 9.21429 9.6789 9.16133 10.0707L8.99467 11.1373C8.90533 11.8707 8.3 12.3333 7.66667 12.3333H7.33333C6.22876 12.3333 5.33333 11.4379 5.33333 10.3333V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                        <path d="M8 14.6667C9.38071 14.6667 10.5 13.5474 10.5 12.1667C10.5 10.7859 9.38071 9.66667 8 9.66667C6.61929 9.66667 5.5 10.7859 5.5 12.1667C5.5 13.5474 6.61929 14.6667 8 14.6667Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      </svg>
+                      Location
+                    </span>
+                    <span className="detail-value">{selectedEmployee.location}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="detail-section">
+                <h3 className="detail-section-title">Employment Details</h3>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="3" width="12" height="10" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                        <path d="M2 6H14" stroke="currentColor" strokeWidth="1.5"/>
+                        <path d="M5 3V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                        <path d="M11 3V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                      Start Date
+                    </span>
+                    <span className="detail-value">{formatDate(selectedEmployee.startDate)}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 1V15M8 1C6.34315 1 5 2.34315 5 4C5 5.65685 6.34315 7 8 7M8 1C9.65685 1 11 2.34315 11 4C11 5.65685 9.65685 7 8 7M8 7C9.65685 7 11 8.34315 11 10C11 11.6569 9.65685 13 8 13M8 7C6.34315 7 5 8.34315 5 10C5 11.6569 6.34315 13 8 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                      </svg>
+                      Salary
+                    </span>
+                    <span className="detail-value detail-salary">{formatCurrency(selectedEmployee.salary)}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 8C9.10457 8 10 7.10457 10 6C10 4.89543 9.10457 4 8 4C6.89543 4 6 4.89543 6 6C6 7.10457 6.89543 8 8 8Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                        <path d="M2 13.3333C2 11.1242 3.79086 9.33333 6 9.33333H10C12.2091 9.33333 14 11.1242 14 13.3333V14H2V13.3333Z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      </svg>
+                      Manager
+                    </span>
+                    <span className="detail-value">{selectedEmployee.manager}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="2" width="12" height="12" rx="1" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                        <path d="M2 5H14" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                      Employee ID
+                    </span>
+                    <span className="detail-value">#{selectedEmployee.id}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
