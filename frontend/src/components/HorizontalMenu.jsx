@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ThemeToggle from './ThemeToggle';
 import './HorizontalMenu.css';
 
 const HorizontalMenu = () => {
@@ -109,6 +110,9 @@ const HorizontalMenu = () => {
               )}
             </li>
           ))}
+          <li className="horizontal-menu-item horizontal-menu-item-right">
+            <ThemeToggle />
+          </li>
         </ul>
       </div>
     </nav>

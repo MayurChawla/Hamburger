@@ -1,27 +1,22 @@
 .theme-toggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1002;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background: #646cff;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.3);
-  padding: 6px;
+  padding: 4px;
+  margin: 0 8px;
 }
 
 .theme-toggle:hover {
   background: #535bf2;
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.4);
 }
 
 .theme-toggle:active {

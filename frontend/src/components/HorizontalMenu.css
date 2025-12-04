@@ -22,11 +22,16 @@
   display: flex;
   align-items: center;
   height: 60px;
+  justify-content: space-between;
 }
 
 .horizontal-menu-item {
   position: relative;
   margin: 0;
+}
+
+.horizontal-menu-item-right {
+  margin-left: auto;
 }
 
 .horizontal-menu-link {
