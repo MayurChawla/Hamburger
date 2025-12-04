@@ -1,14 +1,16 @@
 import HamburgerMenu from './components/HamburgerMenu'
+import HorizontalMenu from './components/HorizontalMenu'
 import './App.css'
 
 function App() {
   return (
     <div className="app">
+      <HorizontalMenu />
       <HamburgerMenu />
       <main className="main-content">
         <h1>Welcome</h1>
-        <p>Click the hamburger menu icon in the top-left corner to open the navigation menu.</p>
-        <p>Some menu items have sub-menus that you can expand by clicking on them.</p>
+        <p>This page features both a horizontal menu at the top and a hamburger menu in the top-left corner.</p>
+        <p>Hover over menu items in the horizontal menu to see sub-menus, or click the hamburger icon for the mobile-friendly menu.</p>
       </main>
     </div>
   )
