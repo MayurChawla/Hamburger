@@ -124,6 +124,7 @@
   list-style: none;
   padding: 8px 0;
   margin: 0;
+  margin-top: 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   border-radius: 0 0 8px 8px;
   opacity: 0;
@@ -131,6 +132,7 @@
   transform: translateY(-10px);
   transition: all 0.3s ease;
   z-index: 1000;
+  white-space: nowrap;
 }
 
 .horizontal-submenu.open {
@@ -203,30 +205,92 @@
 }
 
 /* Responsive design */
+/* ============================================= */
+/* RESPONSIVE: Tablet & Mobile (≤768px)          */
+/* Convert horizontal dropdowns → vertical accordion */
+/* ============================================= */
 @media (max-width: 768px) {
   .horizontal-menu-list {
     flex-wrap: wrap;
     height: auto;
-    padding: 10px 0;
+    padding: 8px 0;
+    gap: 0;
   }
 
+  /* Make each top-level item full-width or half-width */
   .horizontal-menu-item {
-    width: 50%;
+    width: 100%; /* Stacks fully on very small screens */
+    position: relative;
   }
 
+  /* At slightly larger mobile (e.g. tablets), optional 2-column */
+  @media (min-width: 481px) and (max-width: 768px) {
+    .horizontal-menu-item {
+      width: 50%;
+    }
+  }
+
+  /* Top-level links in mobile */
   .horizontal-menu-link {
-    padding: 12px 15px;
+    padding: 16px 20px;
     height: auto;
-    font-size: 14px;
+    justify-content: space-between;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Show arrow always on mobile for clarity */
+  .submenu-arrow {
+    display: inline-block !important;
+  }
+
+  /* === CONVERT DROPDOWN TO ACCORDION === */
   .horizontal-submenu {
-    position: static;
+    position: static;                    /* Remove absolute positioning */
     width: 100%;
+    min-width: unset;
+    background: rgba(255, 255, 255, 0.05);  /* Slightly lighter than parent */
     box-shadow: none;
     border-radius: 0;
-    margin-top: 4px;
-    background: rgba(0, 0, 0, 0.1);
+    margin: 0;
+    padding: 0 0 0 20px;                 /* Indent submenu items */
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    max-height: 0;                       /* Start collapsed */
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.35s ease;
+    pointer-events: none;                /* Disable interaction when closed */
+  }
+
+  .horizontal-submenu.open {
+    max-height: 400px;                   /* Adjust based on content */
+    padding: 8px 0 12px 20px;            /* Space when open */
+    pointer-events: auto;
+  }
+
+  .horizontal-submenu-item {
+    width: 100%;
+  }
+
+  .horizontal-submenu-link {
+    padding: 12px 20px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .horizontal-submenu-link:hover {
+    background: rgba(100, 108, 255, 0.15);
+    padding-left: 24px;
+    color: #646cff;
+  }
+}
+
+/* Extra small phones: full width */
+@media (max-width: 480px) {
+  .horizontal-menu-item {
+    width: 100%;
   }
 }
 

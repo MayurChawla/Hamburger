@@ -87,6 +87,7 @@
 }
 
 .menu-item {
+  position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -94,7 +95,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 12px 20px;
   color: rgba(255, 255, 255, 0.87);
   text-decoration: none;
   font-size: 16px;
@@ -104,7 +105,7 @@
 }
 
 .menu-link:hover {
-  background: rgba(100, 108, 255, 0.1);
+  /* background: rgba(100, 108, 255, 0.1); */
   color: #646cff;
   padding-left: 24px;
 }
@@ -119,37 +120,50 @@
   transform: rotate(180deg);
 }
 
+/* ============== HAMBURGER SUBMENU – VERTICAL ACCORDION ============== */
 .submenu {
-  max-height: 0;
+  max-height: 0;                    /* Collapsed by default */
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.2);
-  transition: max-height 0.3s ease;
-  list-style: none;
-  padding: 0;
+  transition: max-height 0.35s ease;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0;                       /* No padding when closed */
   margin: 0;
+  list-style: none;
+
+  /* Critical: Remove any positioning that pushes it sideways */
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  width: 100% !important;
+  display: block !important;
 }
 
 .submenu.open {
-  max-height: 500px;
+  max-height: 600px;                /* Big enough for any number of items */
+  /* padding: 8px 0;                   Optional: breathing room when open */
 }
 
+/* Submenu items – properly indented and full width */
 .submenu-item {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .submenu-link {
   display: block;
-  padding: 12px 20px 12px 40px;
-  color: rgba(255, 255, 255, 0.7);
+  width: 100%;
+  padding: 12px 0;
+  text-align: center;      /* Indent to show hierarchy */
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 14.5px;
   transition: all 0.2s ease;
 }
 
 .submenu-link:hover {
   background: rgba(100, 108, 255, 0.15);
   color: #646cff;
-  padding-left: 44px;
+  padding-left: 56px;
 }
 
 /* Light mode support */
@@ -186,6 +200,21 @@
   .submenu-arrow {
     color: rgba(0, 0, 0, 0.6);
   }
+  submenu {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .submenu-item {
+    border-top-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .submenu-link {
+    color: #213547;
+  }
+
+  .submenu-link:hover {
+    color: #646cff;
+  }
 }
 
 /* Responsive adjustments */
@@ -195,3 +224,10 @@
   }
 }
 
+[data-theme="light"] .submenu {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .submenu-item {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
