@@ -9,52 +9,52 @@ const HorizontalMenu = () => {
   const [activeHamburgerSubmenu, setActiveHamburgerSubmenu] = useState(null);
 
   const menuItems = [
-    {
-      id: 'home',
-      label: 'Home',
-      link: '#',
-      hasSubmenu: false
-    },
-    {
-      id: 'products',
-      label: 'Products',
-      link: '#',
-      hasSubmenu: true,
-      submenu: [
-        { id: 'product1', label: 'Product 1', link: '#' },
-        { id: 'product2', label: 'Product 2', link: '#' },
-        { id: 'product3', label: 'Product 3', link: '#' }
-      ]
-    },
-    {
-      id: 'services',
-      label: 'Services',
-      link: '#',
-      hasSubmenu: true,
-      submenu: [
-        { id: 'service1', label: 'Service 1', link: '#' },
-        { id: 'service2', label: 'Service 2', link: '#' },
-        { id: 'service3', label: 'Service 3', link: '#' }
-      ]
-    },
-    {
-      id: 'about',
-      label: 'About',
-      link: '#',
-      hasSubmenu: false
-    },
-    {
-      id: 'contact',
-      label: 'Contact',
-      link: '#',
-      hasSubmenu: false
-    },
-    {
-      id: 'blog',
-      label: 'Blog',
-      link: '#',
-      hasSubmenu: false
-    }
+    // {
+    //   id: 'home',
+    //   label: 'Home',
+    //   link: '#',
+    //   hasSubmenu: false
+    // },
+    // {
+    //   id: 'products',
+    //   label: 'Products',
+    //   link: '#',
+    //   hasSubmenu: true,
+    //   submenu: [
+    //     { id: 'product1', label: 'Product 1', link: '#' },
+    //     { id: 'product2', label: 'Product 2', link: '#' },
+    //     { id: 'product3', label: 'Product 3', link: '#' }
+    //   ]
+    // },
+    // {
+    //   id: 'services',
+    //   label: 'Services',
+    //   link: '#',
+    //   hasSubmenu: true,
+    //   submenu: [
+    //     { id: 'service1', label: 'Service 1', link: '#' },
+    //     { id: 'service2', label: 'Service 2', link: '#' },
+    //     { id: 'service3', label: 'Service 3', link: '#' }
+    //   ]
+    // },
+    // {
+    //   id: 'about',
+    //   label: 'About',
+    //   link: '#',
+    //   hasSubmenu: false
+    // },
+    // {
+    //   id: 'contact',
+    //   label: 'Contact',
+    //   link: '#',
+    //   hasSubmenu: false
+    // },
+    // {
+    //   id: 'blog',
+    //   label: 'Blog',
+    //   link: '#',
+    //   hasSubmenu: false
+    // }
   ];
 
   const handleMenuItemClick = (e, item) => {
