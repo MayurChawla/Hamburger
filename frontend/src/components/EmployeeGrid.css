@@ -1,0 +1,302 @@
+.employee-grid-container {
+  width: 100%;
+  padding: 20px;
+}
+
+.grid-header {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.grid-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.grid-subtitle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.grid-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.employee-grid {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1400px;
+  background: #1a1a1a;
+}
+
+.employee-grid thead {
+  background: linear-gradient(135deg, #646cff 0%, #535bf2 100%);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.employee-grid th {
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.employee-grid th:last-child {
+  border-right: none;
+}
+
+.employee-grid tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.employee-grid tbody tr:hover {
+  background: rgba(100, 108, 255, 0.1);
+  transform: scale(1.001);
+}
+
+.employee-grid tbody tr:last-child {
+  border-bottom: none;
+}
+
+.employee-grid td {
+  padding: 16px 12px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.87);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.employee-grid td:last-child {
+  border-right: none;
+}
+
+.cell-id {
+  font-weight: 600;
+  color: #646cff;
+  text-align: center;
+  width: 60px;
+}
+
+.cell-name {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  min-width: 140px;
+}
+
+.cell-email {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  min-width: 220px;
+}
+
+.cell-department {
+  min-width: 120px;
+}
+
+.dept-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.dept-engineering {
+  background: rgba(100, 108, 255, 0.2);
+  color: #646cff;
+}
+
+.dept-sales {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.dept-marketing {
+  background: rgba(251, 146, 60, 0.2);
+  color: #fb923c;
+}
+
+.dept-hr {
+  background: rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+}
+
+.dept-executive {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.dept-finance {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.cell-position {
+  min-width: 160px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cell-salary {
+  font-weight: 600;
+  color: #22c55e;
+  min-width: 100px;
+}
+
+.cell-date {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  min-width: 120px;
+}
+
+.cell-status {
+  min-width: 100px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-active {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.status-inactive {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.cell-location {
+  min-width: 120px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.cell-manager {
+  min-width: 150px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.cell-phone {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  min-width: 140px;
+}
+
+/* Light mode support */
+@media (prefers-color-scheme: light) {
+  .grid-wrapper {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .employee-grid {
+    background: #ffffff;
+  }
+
+  .grid-header h2 {
+    color: #213547;
+  }
+
+  .grid-subtitle {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  .employee-grid tbody tr {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .employee-grid tbody tr:hover {
+    background: rgba(100, 108, 255, 0.08);
+  }
+
+  .employee-grid td {
+    color: #213547;
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .cell-name {
+    color: #213547;
+  }
+
+  .cell-email {
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .cell-position {
+    color: rgba(0, 0, 0, 0.8);
+  }
+
+  .cell-date {
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .cell-location {
+    color: rgba(0, 0, 0, 0.8);
+  }
+
+  .cell-manager {
+    color: rgba(0, 0, 0, 0.7);
+  }
+
+  .cell-phone {
+    color: rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 1400px) {
+  .grid-wrapper {
+    overflow-x: auto;
+  }
+
+  .employee-grid {
+    min-width: 1200px;
+  }
+}
+
+/* Scrollbar styling */
+.grid-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.grid-wrapper::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.grid-wrapper::-webkit-scrollbar-thumb {
+  background: #646cff;
+  border-radius: 4px;
+}
+
+.grid-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #535bf2;
+}
+
+@media (prefers-color-scheme: light) {
+  .grid-wrapper::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
