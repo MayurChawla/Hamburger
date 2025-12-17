@@ -182,7 +182,7 @@
   z-index: 1001;
   width: 48px;
   height: 48px;
-  background: #c8e64c;
+  background: #646cff;
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -196,7 +196,7 @@
 }
 
 .hamburger-button:hover {
-  background: #b8d63c;
+  background: #535bf2;
   transform: scale(1.05);
 }
 
@@ -246,7 +246,7 @@
   width: 420px;
   max-width: 90vw;
   height: 100vh;
-  background: linear-gradient(180deg, #1e2d1e 0%, #1a2a1a 100%);
+  background: linear-gradient(180deg, #080831 0%, #000024 100%);
   z-index: 1000;
   transform: translateX(-100%);
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -273,20 +273,20 @@
   font-family: 'Georgia', serif;
   font-size: 28px;
   font-weight: 400;
-  color: #e8f0dc;
+  color: #e0e7ff;
   letter-spacing: 1px;
 }
 
 .menu-logo::before,
 .menu-logo::after {
   content: '.';
-  color: #c8e64c;
+  color: #818cf8;
 }
 
 .menu-close-button {
   width: 56px;
   height: 56px;
-  background: #c8e64c;
+  background: #646cff;
   border: none;
   border-radius: 16px;
   cursor: pointer;
@@ -299,14 +299,14 @@
 }
 
 .menu-close-button:hover {
-  background: #b8d63c;
+  background: #535bf2;
   transform: scale(1.05);
 }
 
 .menu-close-button svg {
   width: 28px;
   height: 28px;
-  stroke: #1a2a1a;
+  stroke: #1a1a2a;
   stroke-width: 2.5;
 }
 
@@ -327,11 +327,11 @@
 
 .hamburger-search-form:focus-within {
   background: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 0 2px rgba(200, 230, 76, 0.3);
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.3);
 }
 
 .hamburger-search-icon {
-  color: rgba(232, 240, 220, 0.6);
+  color: rgba(224, 231, 255, 0.6);
   flex-shrink: 0;
 }
 
@@ -339,14 +339,14 @@
   flex: 1;
   border: none;
   background: transparent;
-  color: #e8f0dc;
+  color: #e0e7ff;
   font-size: 16px;
   outline: none;
   width: 100%;
 }
 
 .hamburger-search-input::placeholder {
-  color: rgba(232, 240, 220, 0.5);
+  color: rgba(224, 231, 255, 0.5);
 }
 
 .menu-list {
@@ -371,7 +371,7 @@
   width: 100%;
   justify-content: space-between;
   padding: 20px 0;
-  color: #e8f0dc;
+  color: #e0e7ff;
   text-decoration: none;
   font-size: 18px;
   font-weight: 400;
@@ -385,7 +385,7 @@
 }
 
 .menu-link:hover {
-  color: #c8e64c;
+  color: #818cf8;
 }
 
 .submenu-arrow {
@@ -398,7 +398,7 @@
   justify-content: center;
   font-size: 10px;
   transition: all 0.3s ease;
-  color: #e8f0dc;
+  color: #e0e7ff;
 }
 .submenu-arrow.empty {
   background: white;
@@ -407,8 +407,8 @@
 }
 .submenu-arrow.open {
   transform: rotate(180deg);
-  background: rgba(200, 230, 76, 0.2);
-  color: #c8e64c;
+  background: rgba(100, 108, 255, 0.2);
+  color: #818cf8;
 }
 
 /* ============== HAMBURGER SUBMENU – VERTICAL ACCORDION ============== */
@@ -416,7 +416,7 @@
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.35s ease;
-  background: rgba(40, 60, 40, 0.5);
+  background: rgba(40, 40, 60, 0.5);
   padding: 0;
   margin: 0 -24px;
   list-style: none;
@@ -446,7 +446,7 @@
   display: block;
   /* width: 100%; */
   padding: 16px 48px;
-  color: rgba(232, 240, 220, 0.8);
+  color: rgba(224, 231, 255, 0.8);
   text-decoration: none;
   font-size: 16px;
   transition: all 0.2s ease;
@@ -454,8 +454,8 @@
 }
 
 .submenu-link:hover {
-  background: rgba(200, 230, 76, 0.1);
-  color: #c8e64c;
+  background: rgba(100, 108, 255, 0.1);
+  color: #818cf8;
   padding-left: 56px;
 }
 
@@ -472,7 +472,7 @@
 }
 
 .language-label {
-  color: rgba(232, 240, 220, 0.6);
+  color: rgba(224, 231, 255, 0.6);
   font-size: 13px;
   text-transform: capitalize;
 }
@@ -486,7 +486,7 @@
   border: none;
   border-radius: 20px;
   cursor: pointer;
-  color: #e8f0dc;
+  color: #e0e7ff;
   font-size: 13px;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -555,7 +555,7 @@
 }
 
 [data-theme="light"] .hamburger-menu {
-  background: linear-gradient(180deg, #f5f8f0 0%, #e8f0dc 100%);
+  background: linear-gradient(180deg, #f0f0ff 0%, #e0e7ff 100%);
   box-shadow: 4px 0 30px rgba(0, 0, 0, 0.15);
 }
 
@@ -565,11 +565,11 @@
 
 [data-theme="light"] .hamburger-search-form:focus-within {
   background: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 0 0 2px rgba(90, 122, 42, 0.3);
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.3);
 }
 
 [data-theme="light"] .hamburger-search-icon {
-  color: rgba(26, 42, 26, 0.5);
+  color: rgba(26, 26, 42, 0.5);
 }
 
 [data-theme="light"] .hamburger-search-input {
@@ -577,7 +577,7 @@
 }
 
 [data-theme="light"] .hamburger-search-input::placeholder {
-  color: rgba(26, 42, 26, 0.4);
+  color: rgba(26, 26, 42, 0.4);
 }
 
 [data-theme="light"] .menu-logo {
@@ -589,7 +589,7 @@
 }
 
 [data-theme="light"] .menu-link:hover {
-  color: #5a7a2a;
+  color: #535bf2;
 }
 
 [data-theme="light"] .menu-item {
@@ -609,12 +609,12 @@
 }
 
 [data-theme="light"] .submenu-link {
-  color: #2a3a2a;
+  color: #2a2a3a;
 }
 
 [data-theme="light"] .submenu-link:hover {
-  color: #5a7a2a;
-  background: rgba(90, 122, 42, 0.1);
+  color: #535bf2;
+  background: rgba(100, 108, 255, 0.1);
 }
 
 [data-theme="light"] .submenu-arrow {
@@ -628,12 +628,12 @@
 }
 
 [data-theme="light"] .submenu-arrow.open {
-  background: rgba(90, 122, 42, 0.2);
-  color: #5a7a2a;
+  background: rgba(100, 108, 255, 0.2);
+  color: #535bf2;
 }
 
 [data-theme="light"] .language-label {
-  color: rgba(26, 42, 26, 0.6);
+  color: rgba(26, 26, 42, 0.6);
 }
 
 [data-theme="light"] .language-button {

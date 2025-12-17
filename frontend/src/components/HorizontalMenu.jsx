@@ -150,7 +150,7 @@ const HorizontalMenu = () => {
                   navigate('/');
                 }}
               >
-                Company Name
+                View Employee Data
               </a>
             </li>
           {menuItems.map((item) => (
