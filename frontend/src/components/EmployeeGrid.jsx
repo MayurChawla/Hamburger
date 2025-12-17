@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import '../styles/EmployeeGrid.css';
+import EmployeeFilter from './EmployeeFilter';
 
 const GRAPHQL_ENDPOINT = 'http://localhost:4000/graphql';
+const PAGE_SIZE = 10;
 
 const EmployeeGrid = () => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'tile'
@@ -10,21 +12,45 @@ const EmployeeGrid = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
+  
+  // Filter state
+  const [filters, setFilters] = useState({
+    name: '',
+    department: '',
+    location: '',
+    status: '',
+  });
+  const [activeFilters, setActiveFilters] = useState({});
 
-  // Fetch employees from GraphQL API
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(GRAPHQL_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: `
-              query {
-                employees {
+  // Fetch employees with pagination and filters
+  const fetchEmployees = async (page = 1, filterParams = {}) => {
+    try {
+      setLoading(true);
+      
+      // Build filter object for GraphQL
+      const filter = {};
+      if (filterParams.name) filter.name = filterParams.name;
+      if (filterParams.department) filter.department = filterParams.department;
+      if (filterParams.location) filter.location = filterParams.location;
+      if (filterParams.status) filter.status = filterParams.status;
+      
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: `
+            query GetEmployees($pagination: PaginationInput, $filter: EmployeeFilterInput) {
+              employeesConnection(pagination: $pagination, filter: $filter) {
+                nodes {
                   id
                   name
                   email
@@ -36,30 +62,136 @@ const EmployeeGrid = () => {
                   location
                   manager
                   phone
+                  age
+                  class
+                  subjects
+                }
+                pageInfo {
+                  currentPage
+                  totalPages
+                  totalCount
+                  hasNextPage
+                  hasPreviousPage
+                }
+                totalCount
+              }
+            }
+          `,
+          variables: {
+            pagination: { page, limit: PAGE_SIZE },
+            filter: Object.keys(filter).length > 0 ? filter : null,
+          },
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
+      }
+      
+      const { nodes, pageInfo, totalCount } = result.data.employeesConnection;
+      setEmployees(nodes);
+      setTotalCount(totalCount);
+      setTotalPages(pageInfo.totalPages);
+      setHasNextPage(pageInfo.hasNextPage);
+      setHasPreviousPage(pageInfo.hasPreviousPage);
+      setCurrentPage(pageInfo.currentPage);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching employees:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch single employee details
+  const fetchEmployeeDetails = async (id) => {
+    try {
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: `
+            query GetEmployee($id: String!) {
+              employee(id: $id) {
+                id
+                name
+                email
+                department
+                position
+                salary
+                startDate
+                status
+                location
+                manager
+                phone
+                age
+                class
+                subjects
+                attendance {
+                  date
+                  present
                 }
               }
-            `
-          }),
-        });
+            }
+          `,
+          variables: { id },
+        }),
+      });
 
-        const result = await response.json();
-        
-        if (result.errors) {
-          throw new Error(result.errors[0].message);
-        }
-        
-        setEmployees(result.data.employees);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-        console.error('Error fetching employees:', err);
-      } finally {
-        setLoading(false);
+      const result = await response.json();
+      
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
       }
-    };
+      
+      return result.data.employee;
+    } catch (err) {
+      console.error('Error fetching employee details:', err);
+      return null;
+    }
+  };
 
-    fetchEmployees();
+  // Initial fetch
+  useEffect(() => {
+    fetchEmployees(1, activeFilters);
   }, []);
+
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      fetchEmployees(newPage, activeFilters);
+    }
+  };
+
+  // Handle filter change
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    const newFilters = {};
+    if (filters.name) newFilters.name = filters.name;
+    if (filters.department) newFilters.department = filters.department;
+    if (filters.location) newFilters.location = filters.location;
+    if (filters.status) newFilters.status = filters.status;
+    setActiveFilters(newFilters);
+    setCurrentPage(1);
+    fetchEmployees(1, newFilters);
+  };
+
+  // Clear filters
+  const clearFilters = () => {
+    setFilters({ name: '', department: '', location: '', status: '' });
+    setActiveFilters({});
+    setCurrentPage(1);
+    fetchEmployees(1, {});
+  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -106,13 +238,20 @@ const EmployeeGrid = () => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
-  const handleTileClick = (employee, e) => {
+  const handleTileClick = async (employee, e) => {
     // Don't open modal if clicking on menu button or dropdown
     if (e.target.closest('.tile-menu-container') || e.target.closest('.tile-menu-dropdown')) {
       return;
     }
-    setSelectedEmployee(employee);
+    // Fetch full employee details including attendance
+    const fullEmployee = await fetchEmployeeDetails(employee.id);
+    setSelectedEmployee(fullEmployee || employee);
     setOpenMenuId(null); // Close any open menus
+  };
+
+  const handleRowClick = async (employee) => {
+    const fullEmployee = await fetchEmployeeDetails(employee.id);
+    setSelectedEmployee(fullEmployee || employee);
   };
 
   const closeDetailModal = () => {
@@ -141,7 +280,7 @@ const EmployeeGrid = () => {
         <div className="header-content">
           <div>
             <h2>Employee Directory</h2>
-            <p className="grid-subtitle">Total Employees: {employees.length}</p>
+            <p className="grid-subtitle">Total Employees: {totalCount}</p>
           </div>
           <div className="view-switcher">
             <button
@@ -173,6 +312,14 @@ const EmployeeGrid = () => {
           </div>
         </div>
       </div>
+
+      {/* Filter Section */}
+      <EmployeeFilter
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onApply={applyFilters}
+        onClear={clearFilters}
+      />
       
       {viewMode === 'grid' ? (
         <div className="grid-wrapper">
@@ -194,7 +341,7 @@ const EmployeeGrid = () => {
             </thead>
             <tbody>
               {employees.map((employee) => (
-                <tr key={employee.id} onClick={() => setSelectedEmployee(employee)} style={{ cursor: 'pointer' }}>
+                <tr key={employee.id} onClick={() => handleRowClick(employee)} style={{ cursor: 'pointer' }}>
                   <td className="cell-id">{employee.id}</td>
                   <td className="cell-name">{employee.name}</td>
                   <td className="cell-email">{employee.email}</td>
@@ -329,6 +476,43 @@ const EmployeeGrid = () => {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="pagination-controls">
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={!hasPreviousPage}
+            className="pagination-btn"
+          >
+            First
+          </button>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={!hasPreviousPage}
+            className="pagination-btn"
+          >
+            Previous
+          </button>
+          <span className="pagination-info">
+            Page {currentPage} of {totalPages} ({totalCount} total)
+          </span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={!hasNextPage}
+            className="pagination-btn"
+          >
+            Next
+          </button>
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            disabled={!hasNextPage}
+            className="pagination-btn"
+          >
+            Last
+          </button>
         </div>
       )}
 
