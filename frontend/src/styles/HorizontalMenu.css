@@ -39,9 +39,10 @@
 }
 
 .horizontal-menu-item-right {
-  margin-left: auto;
+  margin-left: 0;
   flex-shrink: 0;
 }
+
 
 .hamburger-button-nav {
   width: 36px;
@@ -309,6 +310,45 @@
   stroke-width: 2.5;
 }
 
+/* Hamburger Menu Search Bar */
+.hamburger-search-container {
+  padding: 16px 24px 24px;
+}
+
+.hamburger-search-form {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.hamburger-search-form:focus-within {
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 2px rgba(200, 230, 76, 0.3);
+}
+
+.hamburger-search-icon {
+  color: rgba(232, 240, 220, 0.6);
+  flex-shrink: 0;
+}
+
+.hamburger-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #e8f0dc;
+  font-size: 16px;
+  outline: none;
+  width: 100%;
+}
+
+.hamburger-search-input::placeholder {
+  color: rgba(232, 240, 220, 0.5);
+}
+
 .menu-list {
   list-style: none;
   padding: 0 24px;
@@ -404,13 +444,13 @@
 
 .submenu-link {
   display: block;
-  width: 100%;
+  /* width: 100%; */
   padding: 16px 48px;
   color: rgba(232, 240, 220, 0.8);
   text-decoration: none;
   font-size: 16px;
   transition: all 0.2s ease;
-  text-align: left;
+  text-align: center;
 }
 
 .submenu-link:hover {
@@ -473,6 +513,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
+
   .company-name {
     color: #213547;
   }
@@ -516,6 +557,27 @@
 [data-theme="light"] .hamburger-menu {
   background: linear-gradient(180deg, #f5f8f0 0%, #e8f0dc 100%);
   box-shadow: 4px 0 30px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .hamburger-search-form {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .hamburger-search-form:focus-within {
+  background: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 0 2px rgba(90, 122, 42, 0.3);
+}
+
+[data-theme="light"] .hamburger-search-icon {
+  color: rgba(26, 42, 26, 0.5);
+}
+
+[data-theme="light"] .hamburger-search-input {
+  color: #1a2a1a;
+}
+
+[data-theme="light"] .hamburger-search-input::placeholder {
+  color: rgba(26, 42, 26, 0.4);
 }
 
 [data-theme="light"] .menu-logo {

@@ -7,7 +7,16 @@ const HorizontalMenu = () => {
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [activeHamburgerSubmenu, setActiveHamburgerSubmenu] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      console.log('Searching for:', searchQuery);
+      // Add your search logic here
+    }
+  };
 
   const menuItems = [];
 
@@ -186,6 +195,21 @@ const HorizontalMenu = () => {
     <div className={`menu-overlay ${isHamburgerOpen ? 'open' : ''}`} onClick={handleClickOutside}></div>
 
     <nav className={`hamburger-menu ${isHamburgerOpen ? 'open' : ''}`}>
+      <div className="hamburger-search-container">
+        <form className="hamburger-search-form" onSubmit={handleSearch}>
+          <svg className="hamburger-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/>
+            <path d="M16 16L20 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          <input
+            type="text"
+            className="hamburger-search-input"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </form>
+      </div>
       <ul className="menu-list">
         {hamburgerMenuItems.map((item) => (
           <li key={item.id} className="menu-item">
