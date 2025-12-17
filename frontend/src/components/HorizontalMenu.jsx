@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import './HorizontalMenu.css';
-import './HamburgerMenu.css';
 
 const HorizontalMenu = () => {
   const [activeSubmenu, setActiveSubmenu] = useState(null);
@@ -237,6 +236,7 @@ const HorizontalMenu = () => {
       <ul className="menu-list">
         {hamburgerMenuItems.map((item) => (
           <li key={item.id} className="menu-item">
+            <div></div>
             <a
               href={item.link}
               className="menu-link"
