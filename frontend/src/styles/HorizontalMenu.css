@@ -658,7 +658,7 @@
 
   /* Make each top-level item full-width or half-width */
   .horizontal-menu-item {
-    width: 100%; /* Stacks fully on very small screens */
+    /* width: 100%; Stacks fully on very small screens */
     position: relative;
   }
 
@@ -729,7 +729,7 @@
 /* Extra small phones: full width */
 @media (max-width: 480px) {
   .horizontal-menu-item {
-    width: 100%;
+    /* width: 100%; */
   }
   
   .hamburger-menu {

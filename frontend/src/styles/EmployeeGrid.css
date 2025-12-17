@@ -1061,3 +1061,36 @@
   color: rgba(0, 0, 0, 0.6);
 }
 
+/* Mobile Responsive - Pagination */
+@media (max-width: 768px) {
+  .pagination-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .pagination-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .pagination-info {
+    width: 100%;
+    text-align: center;
+    order: -1;
+    padding: 0 0 8px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagination-controls {
+    gap: 6px;
+  }
+
+  .pagination-btn {
+    padding: 10px;
+    font-size: 14px;
+    flex: 1;
+  }
+}
+
