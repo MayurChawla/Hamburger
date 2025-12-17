@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import '../styles/EmployeeGrid.css';
 import EmployeeFilter from './EmployeeFilter';
+import { useAuth } from '../contexts/AuthContext';
 
 const GRAPHQL_ENDPOINT = 'http://localhost:4000/graphql';
 const PAGE_SIZE = 10;
 
 const EmployeeGrid = () => {
+  const { user, isAdmin, isEmployee } = useAuth();
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'tile'
   const [openMenuId, setOpenMenuId] = useState(null); // Track which menu is open
   const [selectedEmployee, setSelectedEmployee] = useState(null); // Track selected employee for detail view
@@ -29,22 +31,28 @@ const EmployeeGrid = () => {
   });
   const [activeFilters, setActiveFilters] = useState({});
 
+  // Edit state
+  const [editingEmployee, setEditingEmployee] = useState(null);
+  const [editForm, setEditForm] = useState({});
+
   // Fetch employees with pagination and filters
   const fetchEmployees = async (page = 1, filterParams = {}) => {
     try {
       setLoading(true);
-      
+
       // Build filter object for GraphQL
       const filter = {};
       if (filterParams.name) filter.name = filterParams.name;
       if (filterParams.department) filter.department = filterParams.department;
       if (filterParams.location) filter.location = filterParams.location;
       if (filterParams.status) filter.status = filterParams.status;
-      
+
+      const token = localStorage.getItem('authToken');
       const response = await fetch(GRAPHQL_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
         body: JSON.stringify({
           query: `
@@ -109,10 +117,12 @@ const EmployeeGrid = () => {
   // Fetch single employee details
   const fetchEmployeeDetails = async (id) => {
     try {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(GRAPHQL_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
         },
         body: JSON.stringify({
           query: `
@@ -191,6 +201,85 @@ const EmployeeGrid = () => {
     setActiveFilters({});
     setCurrentPage(1);
     fetchEmployees(1, {});
+  };
+
+  // Edit functions (Admin only)
+  const startEditing = (employee) => {
+    if (!isAdmin()) return;
+    setEditingEmployee(employee.id);
+    setEditForm({
+      name: employee.name,
+      email: employee.email,
+      department: employee.department,
+      position: employee.position,
+      salary: employee.salary,
+      status: employee.status,
+      location: employee.location,
+      manager: employee.manager,
+      phone: employee.phone,
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingEmployee(null);
+    setEditForm({});
+  };
+
+  const saveEmployee = async () => {
+    if (!isAdmin()) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          query: `
+            mutation UpdateEmployee($id: String!, $name: String, $email: String, $department: String, $position: String, $salary: Float, $status: String, $location: String, $manager: String, $phone: String) {
+              updateEmployee(id: $id, name: $name, email: $email, department: $department, position: $position, salary: $salary, status: $status, location: $location, manager: $manager, phone: $phone) {
+                id
+                name
+                email
+                department
+                position
+                salary
+                status
+                location
+                manager
+                phone
+              }
+            }
+          `,
+          variables: {
+            id: editingEmployee,
+            ...editForm,
+          },
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
+      }
+
+      // Update the employee in the list
+      setEmployees(employees.map(emp =>
+        emp.id === editingEmployee ? result.data.updateEmployee : emp
+      ));
+
+      cancelEditing();
+    } catch (error) {
+      console.error('Error updating employee:', error);
+      alert('Error updating employee: ' + error.message);
+    }
+  };
+
+  const handleEditFormChange = (field, value) => {
+    setEditForm(prev => ({ ...prev, [field]: value }));
   };
 
   const formatCurrency = (amount) => {
@@ -280,7 +369,12 @@ const EmployeeGrid = () => {
         <div className="header-content">
           <div>
             <h2>Employee Directory</h2>
-            <p className="grid-subtitle">Total Employees: {totalCount}</p>
+            <p className="grid-subtitle">
+              {isAdmin() ? `Total Employees: ${totalCount}` : 'Your Employee Profile'}
+            </p>
+            <p className="user-info">
+              Logged in as: <strong>{user?.username}</strong> ({user?.role})
+            </p>
           </div>
           <div className="view-switcher">
             <button
@@ -337,30 +431,137 @@ const EmployeeGrid = () => {
                 <th>Location</th>
                 <th>Manager</th>
                 <th>Phone</th>
+                {isAdmin() && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {employees.map((employee) => (
-                <tr key={employee.id} onClick={() => handleRowClick(employee)} style={{ cursor: 'pointer' }}>
+                <tr key={employee.id} style={{ cursor: isAdmin() ? 'pointer' : 'default' }} onClick={() => handleRowClick(employee)}>
                   <td className="cell-id">{employee.id}</td>
-                  <td className="cell-name">{employee.name}</td>
-                  <td className="cell-email">{employee.email}</td>
-                  <td className="cell-department">
-                    <span className={`dept-badge dept-${employee.department.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {employee.department}
-                    </span>
+                  <td className="cell-name">
+                    {editingEmployee === employee.id ? (
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => handleEditFormChange('name', e.target.value)}
+                        className="edit-input"
+                      />
+                    ) : (
+                      employee.name
+                    )}
                   </td>
-                  <td className="cell-position">{employee.position}</td>
-                  <td className="cell-salary">{formatCurrency(employee.salary)}</td>
+                  <td className="cell-email">
+                    {editingEmployee === employee.id ? (
+                      <input
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) => handleEditFormChange('email', e.target.value)}
+                        className="edit-input"
+                      />
+                    ) : (
+                      employee.email
+                    )}
+                  </td>
+                  <td className="cell-department">
+                    {editingEmployee === employee.id ? (
+                      <select
+                        value={editForm.department}
+                        onChange={(e) => handleEditFormChange('department', e.target.value)}
+                        className="edit-select"
+                      >
+                        <option value="Engineering">Engineering</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Executive">Executive</option>
+                      </select>
+                    ) : (
+                      <span className={`dept-badge dept-${employee.department.toLowerCase().replace(/\s+/g, '-')}`}>
+                        {employee.department}
+                      </span>
+                    )}
+                  </td>
+                  <td className="cell-position">
+                    {editingEmployee === employee.id ? (
+                      <input
+                        type="text"
+                        value={editForm.position}
+                        onChange={(e) => handleEditFormChange('position', e.target.value)}
+                        className="edit-input"
+                      />
+                    ) : (
+                      employee.position
+                    )}
+                  </td>
+                  <td className="cell-salary">
+                    {editingEmployee === employee.id ? (
+                      <input
+                        type="number"
+                        value={editForm.salary}
+                        onChange={(e) => handleEditFormChange('salary', Number(e.target.value))}
+                        className="edit-input"
+                      />
+                    ) : (
+                      formatCurrency(employee.salary)
+                    )}
+                  </td>
                   <td className="cell-date">{formatDate(employee.startDate)}</td>
                   <td className="cell-status">
-                    <span className={`status-badge status-${employee.status.toLowerCase()}`}>
-                      {employee.status}
-                    </span>
+                    {editingEmployee === employee.id ? (
+                      <select
+                        value={editForm.status}
+                        onChange={(e) => handleEditFormChange('status', e.target.value)}
+                        className="edit-select"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    ) : (
+                      <span className={`status-badge status-${employee.status.toLowerCase()}`}>
+                        {employee.status}
+                      </span>
+                    )}
                   </td>
-                  <td className="cell-location">{employee.location}</td>
+                  <td className="cell-location">
+                    {editingEmployee === employee.id ? (
+                      <input
+                        type="text"
+                        value={editForm.location}
+                        onChange={(e) => handleEditFormChange('location', e.target.value)}
+                        className="edit-input"
+                      />
+                    ) : (
+                      employee.location
+                    )}
+                  </td>
                   <td className="cell-manager">{employee.manager}</td>
-                  <td className="cell-phone">{employee.phone}</td>
+                  <td className="cell-phone">
+                    {editingEmployee === employee.id ? (
+                      <input
+                        type="tel"
+                        value={editForm.phone}
+                        onChange={(e) => handleEditFormChange('phone', e.target.value)}
+                        className="edit-input"
+                      />
+                    ) : (
+                      employee.phone
+                    )}
+                  </td>
+                  <td className="cell-actions">
+                    {isAdmin() && (
+                      <div className="action-buttons">
+                        {editingEmployee === employee.id ? (
+                          <>
+                            <button onClick={saveEmployee} className="action-btn save-btn">Save</button>
+                            <button onClick={cancelEditing} className="action-btn cancel-btn">Cancel</button>
+                          </>
+                        ) : (
+                          <button onClick={() => startEditing(employee)} className="action-btn edit-btn">Edit</button>
+                        )}
+                      </div>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -1061,6 +1061,102 @@
   color: rgba(0, 0, 0, 0.6);
 }
 
+/* Edit functionality */
+.edit-input,
+.edit-select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #646cff;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a1a2e;
+  font-size: 13px;
+}
+
+.edit-input:focus,
+.edit-select:focus {
+  outline: none;
+  border-color: #535bf2;
+}
+
+.cell-actions {
+  width: 120px;
+  text-align: center;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-btn {
+  background: #646cff;
+  color: white;
+}
+
+.edit-btn:hover {
+  background: #535bf2;
+}
+
+.save-btn {
+  background: #51cf66;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #40c057;
+}
+
+.cancel-btn {
+  background: #868e96;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #6c757d;
+}
+
+/* User info */
+.user-info {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.user-info strong {
+  color: #646cff;
+}
+
+/* Light theme support for edit elements */
+[data-theme="light"] .edit-input,
+[data-theme="light"] .edit-select {
+  background: white;
+  border-color: #646cff;
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .action-btn {
+  color: white;
+}
+
+[data-theme="light"] .user-info {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .user-info strong {
+  color: #646cff;
+}
+
 /* Mobile Responsive - Pagination */
 @media (max-width: 768px) {
   .pagination-controls {

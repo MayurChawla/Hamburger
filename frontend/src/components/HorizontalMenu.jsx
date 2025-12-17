@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
+import { useAuth } from '../contexts/AuthContext';
 import '../styles/HorizontalMenu.css';
 
 const HorizontalMenu = () => {
+  const { user, logout, isAuthenticated } = useAuth();
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [activeHamburgerSubmenu, setActiveHamburgerSubmenu] = useState(null);
@@ -185,6 +187,20 @@ const HorizontalMenu = () => {
               )}
             </li>
           ))}
+          {/* {isAuthenticated() && (
+            <li className="horizontal-menu-item horizontal-menu-item-right">
+              <button
+                className="logout-btn"
+                onClick={() => {
+                  logout();
+                  navigate('/');
+                }}
+                title={`Logout (${user?.username})`}
+              >
+                Logout
+              </button>
+            </li>
+          )} */}
           <li className="horizontal-menu-item horizontal-menu-item-right">
             <ThemeToggle />
           </li>
@@ -246,6 +262,25 @@ const HorizontalMenu = () => {
             )}
           </li>
         ))}
+        {isAuthenticated() && (
+          <li className="hamburger-menu-item">
+            <button
+              className="hamburger-logout-btn"
+              onClick={() => {
+                logout();
+                setIsHamburgerOpen(false);
+                navigate('/');
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="16,17 21,12 16,7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Logout ({user?.username})
+            </button>
+          </li>
+        )}
       </ul>
     </nav>
     </>

@@ -680,7 +680,7 @@
 
   /* Show arrow always on mobile for clarity */
   .submenu-arrow {
-    display: inline-block !important;
+    /* display: inline-block !important; */
   }
 
   /* === CONVERT DROPDOWN TO ACCORDION === */
@@ -748,4 +748,71 @@
   .menu-footer {
     padding: 20px;
   }
+}
+
+/* Logout button */
+.logout-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  margin-right: 8px;
+}
+
+.logout-btn:hover {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+  color: white;
+}
+
+[data-theme="light"] .logout-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+[data-theme="light"] .logout-btn:hover {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+}
+
+/* Hamburger logout button */
+.hamburger-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 15px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.hamburger-logout-btn:hover {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  padding-left: 24px;
+}
+
+.hamburger-logout-btn svg {
+  flex-shrink: 0;
+}
+
+[data-theme="light"] .hamburger-logout-btn {
+  color: rgba(0, 0, 0, 0.8);
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .hamburger-logout-btn:hover {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
 }
