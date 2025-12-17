@@ -401,7 +401,7 @@
   color: #e0e7ff;
 }
 .submenu-arrow.empty {
-  background: white;
+  background: transparent;
   border-radius: 0;
   color: transparent;
 }
@@ -555,7 +555,7 @@
 }
 
 [data-theme="light"] .hamburger-menu {
-  background: linear-gradient(180deg, #f0f0ff 0%, #e0e7ff 100%);
+  background: linear-gradient(180deg, #f0f1ff 0%, #f0f0f5 100%);
   box-shadow: 4px 0 30px rgba(0, 0, 0, 0.15);
 }
 
