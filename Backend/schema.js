@@ -1,54 +1,165 @@
-const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLBoolean, GraphQLEnumType, GraphQLInputObjectType } = require('graphql');
+const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLBoolean, GraphQLEnumType, GraphQLInputObjectType, GraphQLFloat } = require('graphql');
 const auth = require('./auth');
 
-// Sample data (in a real app, this would come from a database)
+// Sample data matching frontend structure
 let employees = [
-  { 
-    id: '1', 
-    name: 'John Doe', 
-    age: 30, 
-    class: 'A', 
-    subjects: ['Mathematics', 'Science', 'English'],
-    attendance: [
-      { date: '2024-01-15', present: true },
-      { date: '2024-01-16', present: true },
-      { date: '2024-01-17', present: false },
-    ]
+  {
+    id: '1',
+    name: 'John Doe',
+    email: 'john.doe@company.com',
+    department: 'Engineering',
+    position: 'Senior Developer',
+    salary: 95000,
+    startDate: '2020-01-15',
+    status: 'Active',
+    location: 'New York',
+    manager: 'Jane Smith',
+    phone: '+1-555-0101'
   },
-  { 
-    id: '2', 
-    name: 'Jane Smith', 
-    age: 25, 
-    class: 'B', 
-    subjects: ['History', 'Geography', 'English'],
-    attendance: [
-      { date: '2024-01-15', present: true },
-      { date: '2024-01-16', present: true },
-      { date: '2024-01-17', present: true },
-    ]
+  {
+    id: '2',
+    name: 'Jane Smith',
+    email: 'jane.smith@company.com',
+    department: 'Engineering',
+    position: 'Engineering Manager',
+    salary: 120000,
+    startDate: '2018-03-20',
+    status: 'Active',
+    location: 'New York',
+    manager: 'Robert Johnson',
+    phone: '+1-555-0102'
   },
-  { 
-    id: '3', 
-    name: 'Bob Johnson', 
-    age: 35, 
-    class: 'A', 
-    subjects: ['Mathematics', 'Physics', 'Chemistry'],
-    attendance: [
-      { date: '2024-01-15', present: false },
-      { date: '2024-01-16', present: true },
-      { date: '2024-01-17', present: true },
-    ]
+  {
+    id: '3',
+    name: 'Mike Johnson',
+    email: 'mike.johnson@company.com',
+    department: 'Sales',
+    position: 'Sales Representative',
+    salary: 65000,
+    startDate: '2021-06-10',
+    status: 'Active',
+    location: 'Los Angeles',
+    manager: 'Sarah Williams',
+    phone: '+1-555-0103'
   },
+  {
+    id: '4',
+    name: 'Sarah Williams',
+    email: 'sarah.williams@company.com',
+    department: 'Sales',
+    position: 'Sales Manager',
+    salary: 85000,
+    startDate: '2019-09-05',
+    status: 'Active',
+    location: 'Los Angeles',
+    manager: 'Robert Johnson',
+    phone: '+1-555-0104'
+  },
+  {
+    id: '5',
+    name: 'David Brown',
+    email: 'david.brown@company.com',
+    department: 'Marketing',
+    position: 'Marketing Specialist',
+    salary: 70000,
+    startDate: '2022-02-14',
+    status: 'Active',
+    location: 'Chicago',
+    manager: 'Emily Davis',
+    phone: '+1-555-0105'
+  },
+  {
+    id: '6',
+    name: 'Emily Davis',
+    email: 'emily.davis@company.com',
+    department: 'Marketing',
+    position: 'Marketing Director',
+    salary: 110000,
+    startDate: '2017-11-30',
+    status: 'Active',
+    location: 'Chicago',
+    manager: 'Robert Johnson',
+    phone: '+1-555-0106'
+  },
+  {
+    id: '7',
+    name: 'Chris Wilson',
+    email: 'chris.wilson@company.com',
+    department: 'HR',
+    position: 'HR Coordinator',
+    salary: 60000,
+    startDate: '2023-01-08',
+    status: 'Active',
+    location: 'Boston',
+    manager: 'Lisa Anderson',
+    phone: '+1-555-0107'
+  },
+  {
+    id: '8',
+    name: 'Lisa Anderson',
+    email: 'lisa.anderson@company.com',
+    department: 'HR',
+    position: 'HR Manager',
+    salary: 90000,
+    startDate: '2016-05-22',
+    status: 'Active',
+    location: 'Boston',
+    manager: 'Robert Johnson',
+    phone: '+1-555-0108'
+  },
+  {
+    id: '9',
+    name: 'Robert Johnson',
+    email: 'robert.johnson@company.com',
+    department: 'Executive',
+    position: 'CEO',
+    salary: 200000,
+    startDate: '2015-01-10',
+    status: 'Active',
+    location: 'New York',
+    manager: 'Board of Directors',
+    phone: '+1-555-0109'
+  },
+  {
+    id: '10',
+    name: 'Amanda Taylor',
+    email: 'amanda.taylor@company.com',
+    department: 'Finance',
+    position: 'Financial Analyst',
+    salary: 75000,
+    startDate: '2021-08-17',
+    status: 'Active',
+    location: 'Seattle',
+    manager: 'Michael Chen',
+    phone: '+1-555-0110'
+  },
+  {
+    id: '11',
+    name: 'Michael Chen',
+    email: 'michael.chen@company.com',
+    department: 'Finance',
+    position: 'Finance Director',
+    salary: 105000,
+    startDate: '2018-07-12',
+    status: 'Active',
+    location: 'Seattle',
+    manager: 'Robert Johnson',
+    phone: '+1-555-0111'
+  },
+  {
+    id: '12',
+    name: 'Jessica Martinez',
+    email: 'jessica.martinez@company.com',
+    department: 'Engineering',
+    position: 'Junior Developer',
+    salary: 70000,
+    startDate: '2023-03-01',
+    status: 'Active',
+    location: 'Austin',
+    manager: 'Jane Smith',
+    phone: '+1-555-0112'
+  }
 ];
-
-// Attendance Type
-const AttendanceType = new GraphQLObjectType({
-  name: 'Attendance',
-  fields: () => ({
-    date: { type: GraphQLString },
-    present: { type: GraphQLBoolean },
-  }),
-});
 
 // Employee Type
 const EmployeeType = new GraphQLObjectType({
@@ -56,10 +167,15 @@ const EmployeeType = new GraphQLObjectType({
   fields: () => ({
     id: { type: GraphQLString },
     name: { type: GraphQLString },
-    age: { type: GraphQLInt },
-    class: { type: GraphQLString },
-    subjects: { type: new GraphQLList(GraphQLString) },
-    attendance: { type: new GraphQLList(AttendanceType) },
+    email: { type: GraphQLString },
+    department: { type: GraphQLString },
+    position: { type: GraphQLString },
+    salary: { type: GraphQLFloat },
+    startDate: { type: GraphQLString },
+    status: { type: GraphQLString },
+    location: { type: GraphQLString },
+    manager: { type: GraphQLString },
+    phone: { type: GraphQLString },
   }),
 });
 
@@ -108,7 +224,7 @@ const SortInput = new GraphQLInputObjectType({
   fields: {
     field: { 
       type: new GraphQLNonNull(GraphQLString),
-      description: 'Field to sort by (id, name, age, class)'
+      description: 'Field to sort by'
     },
     order: { 
       type: SortOrderEnum,
@@ -152,20 +268,10 @@ const PageInfoType = new GraphQLObjectType({
   }),
 });
 
-// Employee Edge Type (for connection pattern)
-const EmployeeEdgeType = new GraphQLObjectType({
-  name: 'EmployeeEdge',
-  fields: () => ({
-    node: { type: EmployeeType },
-    cursor: { type: GraphQLString },
-  }),
-});
-
 // Employee Connection Type (paginated response)
 const EmployeeConnectionType = new GraphQLObjectType({
   name: 'EmployeeConnection',
   fields: () => ({
-    edges: { type: new GraphQLList(EmployeeEdgeType) },
     nodes: { type: new GraphQLList(EmployeeType) },
     pageInfo: { type: PageInfoType },
     totalCount: { type: GraphQLInt },
@@ -185,11 +291,10 @@ function applySorting(data, sort) {
     let aVal = a[field];
     let bVal = b[field];
 
-    // Handle different field types
-    if (field === 'age') {
+    if (typeof aVal === 'number') {
       aVal = aVal || 0;
       bVal = bVal || 0;
-    } else if (field === 'name' || field === 'class' || field === 'id') {
+    } else {
       aVal = (aVal || '').toString().toLowerCase();
       bVal = (bVal || '').toString().toLowerCase();
     }
@@ -240,60 +345,24 @@ function getUserFromContext(context) {
   return context.user || null;
 }
 
-// Authorization helpers
-function requireAuth(context) {
-  const user = getUserFromContext(context);
-  if (!user) {
-    throw new Error('Authentication required');
-  }
-  return user;
-}
-
-function requireRole(context, role) {
-  const user = requireAuth(context);
-  if (user.role !== role) {
-    throw new Error(`Access denied. ${role} role required.`);
-  }
-  return user;
-}
-
-function requireAdmin(context) {
-  return requireRole(context, 'admin');
-}
-
-function requireEmployee(context) {
-  return requireRole(context, 'employee');
-}
-
-function canAccessEmployeeData(context, employeeId) {
-  const user = requireAuth(context);
-  if (!auth.canAccessEmployee(user, employeeId)) {
-    throw new Error('Access denied. You can only access your own data.');
-  }
-  return user;
-}
-
 // Root Query
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    // Get all employees (with pagination and sorting support) - Admin only
+    // Get all employees (public - no auth required for demo)
     employees: {
       type: new GraphQLList(EmployeeType),
       args: {
         pagination: { type: PaginationInput },
         sort: { type: SortInput },
       },
-      resolve(parent, args, context) {
-        requireAdmin(context);
+      resolve(parent, args) {
         let result = [...employees];
         
-        // Apply sorting
         if (args.sort) {
           result = applySorting(result, args.sort);
         }
         
-        // Apply pagination
         if (args.pagination) {
           const paginated = applyPagination(result, args.pagination);
           return paginated.data;
@@ -302,105 +371,38 @@ const RootQuery = new GraphQLObjectType({
         return result;
       },
     },
-    // Get all employees (paginated connection) - Admin only
+    // Get all employees (paginated connection)
     employeesConnection: {
       type: EmployeeConnectionType,
       args: {
         pagination: { type: PaginationInput },
         sort: { type: SortInput },
       },
-      resolve(parent, args, context) {
-        requireAdmin(context);
+      resolve(parent, args) {
         let result = [...employees];
         
-        // Apply sorting
         if (args.sort) {
           result = applySorting(result, args.sort);
         }
         
-        // Apply pagination
         const pagination = args.pagination || { page: 1, limit: 10 };
         const paginated = applyPagination(result, pagination);
         
         return {
-          edges: paginated.data.map((node, index) => ({
-            node,
-            cursor: String((pagination.page ? (pagination.page - 1) * (pagination.limit || 10) : pagination.offset || 0) + index + 1),
-          })),
           nodes: paginated.data,
           pageInfo: paginated.pageInfo,
           totalCount: paginated.totalCount,
         };
       },
     },
-    // Get employee by ID - Admin can access all, Employee can only access their own
+    // Get employee by ID
     employee: {
       type: EmployeeType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve(parent, args, context) {
-        const user = requireAuth(context);
-        canAccessEmployeeData(context, args.id);
+      resolve(parent, args) {
         return employees.find(employee => employee.id === args.id);
-      },
-    },
-    // Get employees by class (with pagination and sorting support) - Admin only
-    employeesByClass: {
-      type: new GraphQLList(EmployeeType),
-      args: {
-        class: { type: new GraphQLNonNull(GraphQLString) },
-        pagination: { type: PaginationInput },
-        sort: { type: SortInput },
-      },
-      resolve(parent, args, context) {
-        requireAdmin(context);
-        let result = employees.filter(employee => employee.class === args.class);
-        
-        // Apply sorting
-        if (args.sort) {
-          result = applySorting(result, args.sort);
-        }
-        
-        // Apply pagination
-        if (args.pagination) {
-          const paginated = applyPagination(result, args.pagination);
-          return paginated.data;
-        }
-        
-        return result;
-      },
-    },
-    // Get employees by class (paginated connection) - Admin only
-    employeesByClassConnection: {
-      type: EmployeeConnectionType,
-      args: {
-        class: { type: new GraphQLNonNull(GraphQLString) },
-        pagination: { type: PaginationInput },
-        sort: { type: SortInput },
-      },
-      resolve(parent, args, context) {
-        requireAdmin(context);
-        let result = employees.filter(employee => employee.class === args.class);
-        
-        // Apply sorting
-        if (args.sort) {
-          result = applySorting(result, args.sort);
-        }
-        
-        // Apply pagination
-        const pagination = args.pagination || { page: 1, limit: 10 };
-        const paginated = applyPagination(result, pagination);
-        
-        return {
-          edges: paginated.data.map((node, index) => ({
-            node,
-            cursor: String((pagination.page ? (pagination.page - 1) * (pagination.limit || 10) : pagination.offset || 0) + index + 1),
-          })),
-          nodes: paginated.data,
-          pageInfo: paginated.pageInfo,
-          totalCount: paginated.totalCount,
-        };
       },
     },
     // Hello world query
@@ -455,112 +457,82 @@ const RootMutation = new GraphQLObjectType({
         };
       },
     },
-    // Register mutation
-    register: {
-      type: AuthResponseType,
-      args: {
-        username: { type: new GraphQLNonNull(GraphQLString) },
-        email: { type: new GraphQLNonNull(GraphQLString) },
-        password: { type: new GraphQLNonNull(GraphQLString) },
-        role: { type: RoleEnum },
-        employeeId: { type: GraphQLString },
-      },
-      async resolve(parent, args) {
-        // Check if user already exists
-        const existingUser = auth.getUserByUsernameOrEmail(args.username) || 
-                            auth.getUserByUsernameOrEmail(args.email);
-        if (existingUser) {
-          throw new Error('User already exists');
-        }
-
-        // Hash password
-        const hashedPassword = await auth.hashPassword(args.password);
-
-        // Create user (only admin can create admin users, default is employee)
-        const role = args.role || 'employee';
-        const newUser = auth.createUser({
-          username: args.username,
-          email: args.email,
-          password: hashedPassword,
-          role: role,
-          employeeId: args.employeeId || null,
-        });
-
-        const token = auth.generateToken(newUser);
-        return {
-          token,
-          user: {
-            id: newUser.id,
-            username: newUser.username,
-            email: newUser.email,
-            role: newUser.role,
-            employeeId: newUser.employeeId,
-          },
-        };
-      },
-    },
-    // Create employee - Admin only
+    // Create employee
     createEmployee: {
       type: EmployeeType,
       args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
-        age: { type: new GraphQLNonNull(GraphQLInt) },
-        class: { type: new GraphQLNonNull(GraphQLString) },
-        subjects: { type: new GraphQLList(GraphQLString) },
+        email: { type: new GraphQLNonNull(GraphQLString) },
+        department: { type: new GraphQLNonNull(GraphQLString) },
+        position: { type: new GraphQLNonNull(GraphQLString) },
+        salary: { type: new GraphQLNonNull(GraphQLFloat) },
+        startDate: { type: new GraphQLNonNull(GraphQLString) },
+        status: { type: GraphQLString },
+        location: { type: GraphQLString },
+        manager: { type: GraphQLString },
+        phone: { type: GraphQLString },
       },
-      resolve(parent, args, context) {
-        requireAdmin(context);
+      resolve(parent, args) {
         const newEmployee = {
           id: String(employees.length + 1),
           name: args.name,
-          age: args.age,
-          class: args.class,
-          subjects: args.subjects || [],
-          attendance: [],
+          email: args.email,
+          department: args.department,
+          position: args.position,
+          salary: args.salary,
+          startDate: args.startDate,
+          status: args.status || 'Active',
+          location: args.location || '',
+          manager: args.manager || '',
+          phone: args.phone || '',
         };
         employees.push(newEmployee);
         return newEmployee;
       },
     },
-    // Update employee - Admin can update all, Employee can only update their own
+    // Update employee
     updateEmployee: {
       type: EmployeeType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
         name: { type: GraphQLString },
-        age: { type: GraphQLInt },
-        class: { type: GraphQLString },
-        subjects: { type: new GraphQLList(GraphQLString) },
+        email: { type: GraphQLString },
+        department: { type: GraphQLString },
+        position: { type: GraphQLString },
+        salary: { type: GraphQLFloat },
+        startDate: { type: GraphQLString },
+        status: { type: GraphQLString },
+        location: { type: GraphQLString },
+        manager: { type: GraphQLString },
+        phone: { type: GraphQLString },
       },
-      resolve(parent, args, context) {
-        const user = requireAuth(context);
-        canAccessEmployeeData(context, args.id);
-        
+      resolve(parent, args) {
         const employee = employees.find(e => e.id === args.id);
         if (!employee) {
           throw new Error('Employee not found');
         }
         
-        // Employees can only update certain fields (not class)
-        if (user.role === 'employee' && args.class) {
-          throw new Error('Employees cannot update class');
-        }
-        
         if (args.name) employee.name = args.name;
-        if (args.age !== undefined) employee.age = args.age;
-        if (args.class && user.role === 'admin') employee.class = args.class;
-        if (args.subjects) employee.subjects = args.subjects;
+        if (args.email) employee.email = args.email;
+        if (args.department) employee.department = args.department;
+        if (args.position) employee.position = args.position;
+        if (args.salary !== undefined) employee.salary = args.salary;
+        if (args.startDate) employee.startDate = args.startDate;
+        if (args.status) employee.status = args.status;
+        if (args.location) employee.location = args.location;
+        if (args.manager) employee.manager = args.manager;
+        if (args.phone) employee.phone = args.phone;
+        
         return employee;
       },
     },
-    // Delete employee - Admin only
+    // Delete employee
     deleteEmployee: {
       type: EmployeeType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve(parent, args, context) {
-        requireAdmin(context);
+      resolve(parent, args) {
         const employeeIndex = employees.findIndex(e => e.id === args.id);
         if (employeeIndex === -1) {
           throw new Error('Employee not found');
@@ -568,35 +540,6 @@ const RootMutation = new GraphQLObjectType({
         const deletedEmployee = employees[employeeIndex];
         employees.splice(employeeIndex, 1);
         return deletedEmployee;
-      },
-    },
-    // Mark attendance - Admin can mark for any employee, Employee can only mark their own
-    markAttendance: {
-      type: EmployeeType,
-      args: {
-        id: { type: new GraphQLNonNull(GraphQLString) },
-        date: { type: new GraphQLNonNull(GraphQLString) },
-        present: { type: new GraphQLNonNull(GraphQLBoolean) },
-      },
-      resolve(parent, args, context) {
-        const user = requireAuth(context);
-        canAccessEmployeeData(context, args.id);
-        
-        const employee = employees.find(e => e.id === args.id);
-        if (!employee) {
-          throw new Error('Employee not found');
-        }
-        // Check if attendance for this date already exists
-        const existingAttendance = employee.attendance.find(a => a.date === args.date);
-        if (existingAttendance) {
-          existingAttendance.present = args.present;
-        } else {
-          employee.attendance.push({
-            date: args.date,
-            present: args.present,
-          });
-        }
-        return employee;
       },
     },
   },
@@ -609,4 +552,3 @@ const schema = new GraphQLSchema({
 });
 
 module.exports = schema;
-
