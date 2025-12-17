@@ -281,7 +281,7 @@ const EmployeeGrid = () => {
             </thead>
             <tbody>
               {employees.map((employee) => (
-                <tr key={employee.id}>
+                <tr key={employee.id} onClick={() => setSelectedEmployee(employee)} style={{ cursor: 'pointer' }}>
                   <td className="cell-id">{employee.id}</td>
                   <td className="cell-name">{employee.name}</td>
                   <td className="cell-email">{employee.email}</td>
