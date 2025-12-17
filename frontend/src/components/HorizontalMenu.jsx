@@ -189,18 +189,18 @@ const HorizontalMenu = () => {
       <ul className="menu-list">
         {hamburgerMenuItems.map((item) => (
           <li key={item.id} className="menu-item">
-            <div></div>
             <a
               href={item.link}
               className="menu-link"
               onClick={(e) => handleHamburgerMenuItemClick(e, item)}
-            >
-              {item.label}
-              {item.hasSubmenu && (
+              >
+              <div></div>
+              <span className="menu-link-text">{item.label}</span>
+              {item.hasSubmenu?  (
                 <span className={`submenu-arrow ${activeHamburgerSubmenu === item.id ? 'open' : ''}`}>
                   ▼
                 </span>
-              )}
+              ): (<div className="submenu-arrow empty"></div>)}
             </a>
             {item.hasSubmenu && (
               <ul className={`submenu ${activeHamburgerSubmenu === item.id ? 'open' : ''}`}>

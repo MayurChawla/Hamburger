@@ -339,6 +339,10 @@
   cursor: pointer;
   letter-spacing: 0.3px;
 }
+.menu-link .menu-link-text {
+  min-width: 100px;
+  text-align: center;
+}
 
 .menu-link:hover {
   color: #c8e64c;
@@ -356,7 +360,11 @@
   transition: all 0.3s ease;
   color: #e8f0dc;
 }
-
+.submenu-arrow.empty {
+  background: white;
+  border-radius: 0;
+  color: transparent;
+}
 .submenu-arrow.open {
   transform: rotate(180deg);
   background: rgba(200, 230, 76, 0.2);
@@ -550,6 +558,11 @@
 [data-theme="light"] .submenu-arrow {
   background: rgba(0, 0, 0, 0.08);
   color: #1a2a1a;
+}
+
+[data-theme="light"] .submenu-arrow.empty {
+  background: transparent;
+  color: transparent;
 }
 
 [data-theme="light"] .submenu-arrow.open {

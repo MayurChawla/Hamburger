@@ -559,7 +559,10 @@
   .view-button {
     color: rgba(0, 0, 0, 0.7);
   }
-
+  .view-button.active {
+    background: #646cff;
+    color: white;
+  }
   .view-button:hover {
     background: rgba(0, 0, 0, 0.05);
     color: rgba(0, 0, 0, 0.9);
