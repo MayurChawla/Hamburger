@@ -35,6 +35,10 @@ const EmployeeGrid = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [editForm, setEditForm] = useState({});
 
+  // Modal edit state
+  const [isEditingModal, setIsEditingModal] = useState(false);
+  const [modalEditForm, setModalEditForm] = useState({});
+
   // Fetch employees with pagination and filters
   const fetchEmployees = async (page = 1, filterParams = {}) => {
     try {
@@ -280,6 +284,67 @@ const EmployeeGrid = () => {
 
   const handleEditFormChange = (field, value) => {
     setEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleModalEditFormChange = (field, value) => {
+    setModalEditForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleModalSave = async () => {
+    if (!isAdmin()) return;
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          query: `
+            mutation UpdateEmployee($id: String!, $name: String, $email: String, $department: String, $position: String, $salary: Float, $status: String, $location: String, $manager: String, $phone: String) {
+              updateEmployee(id: $id, name: $name, email: $email, department: $department, position: $position, salary: $salary, status: $status, location: $location, manager: $manager, phone: $phone) {
+                id
+                name
+                email
+                department
+                position
+                salary
+                status
+                location
+                manager
+                phone
+              }
+            }
+          `,
+          variables: {
+            id: selectedEmployee.id,
+            ...modalEditForm,
+          },
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
+      }
+
+      // Update the selected employee with new data
+      setSelectedEmployee(result.data.updateEmployee);
+
+      // Also update the employee in the main list if it exists
+      setEmployees(employees.map(emp =>
+        emp.id === selectedEmployee.id ? result.data.updateEmployee : emp
+      ));
+
+      setIsEditingModal(false);
+      setModalEditForm({});
+    } catch (error) {
+      console.error('Error updating employee in modal:', error);
+      alert('Error updating employee: ' + error.message);
+    }
   };
 
   const formatCurrency = (amount) => {
@@ -729,20 +794,109 @@ const EmployeeGrid = () => {
             
             <div className="detail-modal-header">
               <div className="detail-avatar-large">
-                {selectedEmployee.name.split(' ').map(n => n[0]).join('')}
+                {isEditingModal ? modalEditForm.name.split(' ').map(n => n[0]).join('') : selectedEmployee.name.split(' ').map(n => n[0]).join('')}
               </div>
               <div className="detail-header-info">
-                <h2 className="detail-name">{selectedEmployee.name}</h2>
-                <p className="detail-position">{selectedEmployee.position}</p>
-                <div className="detail-badges">
-                  <span className={`dept-badge dept-${selectedEmployee.department.toLowerCase().replace(/\s+/g, '-')}`}>
-                    {selectedEmployee.department}
-                  </span>
-                  <span className={`status-badge status-${selectedEmployee.status.toLowerCase()}`}>
-                    {selectedEmployee.status}
-                  </span>
-                </div>
+                {isEditingModal ? (
+                  <>
+                    <input
+                      type="text"
+                      className="modal-edit-input modal-edit-name"
+                      value={modalEditForm.name}
+                      onChange={(e) => handleModalEditFormChange('name', e.target.value)}
+                      placeholder="Employee Name"
+                    />
+                    <input
+                      type="text"
+                      className="modal-edit-input modal-edit-position"
+                      value={modalEditForm.position}
+                      onChange={(e) => handleModalEditFormChange('position', e.target.value)}
+                      placeholder="Position"
+                    />
+                    <div className="detail-badges">
+                      <select
+                        className="modal-edit-select"
+                        value={modalEditForm.department}
+                        onChange={(e) => handleModalEditFormChange('department', e.target.value)}
+                      >
+                        <option value="Engineering">Engineering</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Executive">Executive</option>
+                      </select>
+                      <select
+                        className="modal-edit-select"
+                        value={modalEditForm.status}
+                        onChange={(e) => handleModalEditFormChange('status', e.target.value)}
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="detail-name">{selectedEmployee.name}</h2>
+                    <p className="detail-position">{selectedEmployee.position}</p>
+                    <div className="detail-badges">
+                      <span className={`dept-badge dept-${selectedEmployee.department.toLowerCase().replace(/\s+/g, '-')}`}>
+                        {selectedEmployee.department}
+                      </span>
+                      <span className={`status-badge status-${selectedEmployee.status.toLowerCase()}`}>
+                        {selectedEmployee.status}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
+              {isAdmin() && (
+                <div className="detail-modal-actions">
+                  {!isEditingModal ? (
+                    <button
+                      className="action-btn edit-btn"
+                      onClick={() => {
+                        setIsEditingModal(true);
+                        setModalEditForm({
+                          name: selectedEmployee.name,
+                          email: selectedEmployee.email,
+                          department: selectedEmployee.department,
+                          position: selectedEmployee.position,
+                          salary: selectedEmployee.salary,
+                          status: selectedEmployee.status,
+                          location: selectedEmployee.location,
+                          manager: selectedEmployee.manager,
+                          phone: selectedEmployee.phone,
+                        });
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.333 2.00001C11.5084 1.82445 11.7163 1.68507 11.9447 1.59123C12.1731 1.49738 12.4173 1.45117 12.6637 1.45534C12.9101 1.45951 13.1527 1.51395 13.3776 1.61519C13.6025 1.71643 13.8052 1.86233 13.9747 2.04435C14.1442 2.22637 14.2771 2.44074 14.3659 2.67557C14.4547 2.9104 14.4975 3.16088 14.4919 3.41235C14.4863 3.66382 14.4324 3.91154 14.3333 4.14168L14 4.66668L11.333 2.00001ZM10 3.33334L2.66667 10.6667V13.3333H5.33333L12.6667 6.00001L10 3.33334Z" fill="currentColor"/>
+                      </svg>
+                      Edit Details
+                    </button>
+                  ) : (
+                    <div className="edit-actions">
+                      <button
+                        className="action-btn save-btn"
+                        onClick={handleModalSave}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="action-btn cancel-btn"
+                        onClick={() => {
+                          setIsEditingModal(false);
+                          setModalEditForm({});
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="detail-modal-body">
@@ -757,7 +911,16 @@ const EmployeeGrid = () => {
                       </svg>
                       Email
                     </span>
-                    <span className="detail-value">{selectedEmployee.email}</span>
+                    {isEditingModal ? (
+                      <input
+                        type="email"
+                        className="modal-edit-input"
+                        value={modalEditForm.email}
+                        onChange={(e) => handleModalEditFormChange('email', e.target.value)}
+                      />
+                    ) : (
+                      <span className="detail-value">{selectedEmployee.email}</span>
+                    )}
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">
@@ -766,7 +929,16 @@ const EmployeeGrid = () => {
                       </svg>
                       Phone
                     </span>
-                    <span className="detail-value">{selectedEmployee.phone}</span>
+                    {isEditingModal ? (
+                      <input
+                        type="tel"
+                        className="modal-edit-input"
+                        value={modalEditForm.phone}
+                        onChange={(e) => handleModalEditFormChange('phone', e.target.value)}
+                      />
+                    ) : (
+                      <span className="detail-value">{selectedEmployee.phone}</span>
+                    )}
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">
@@ -778,7 +950,16 @@ const EmployeeGrid = () => {
                       </svg>
                       Location
                     </span>
-                    <span className="detail-value">{selectedEmployee.location}</span>
+                    {isEditingModal ? (
+                      <input
+                        type="text"
+                        className="modal-edit-input"
+                        value={modalEditForm.location}
+                        onChange={(e) => handleModalEditFormChange('location', e.target.value)}
+                      />
+                    ) : (
+                      <span className="detail-value">{selectedEmployee.location}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -805,7 +986,16 @@ const EmployeeGrid = () => {
                       </svg>
                       Salary
                     </span>
-                    <span className="detail-value detail-salary">{formatCurrency(selectedEmployee.salary)}</span>
+                    {isEditingModal ? (
+                      <input
+                        type="number"
+                        className="modal-edit-input"
+                        value={modalEditForm.salary}
+                        onChange={(e) => handleModalEditFormChange('salary', Number(e.target.value))}
+                      />
+                    ) : (
+                      <span className="detail-value detail-salary">{formatCurrency(selectedEmployee.salary)}</span>
+                    )}
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">
@@ -815,7 +1005,16 @@ const EmployeeGrid = () => {
                       </svg>
                       Manager
                     </span>
-                    <span className="detail-value">{selectedEmployee.manager}</span>
+                    {isEditingModal ? (
+                      <input
+                        type="text"
+                        className="modal-edit-input"
+                        value={modalEditForm.manager}
+                        onChange={(e) => handleModalEditFormChange('manager', e.target.value)}
+                      />
+                    ) : (
+                      <span className="detail-value">{selectedEmployee.manager}</span>
+                    )}
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">
