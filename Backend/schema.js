@@ -14,7 +14,15 @@ let employees = [
     status: 'Active',
     location: 'New York',
     manager: 'Jane Smith',
-    phone: '+1-555-0101'
+    phone: '+1-555-0101',
+    age: 30,
+    class: 'A',
+    subjects: ['Mathematics', 'Science', 'English'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: false },
+    ]
   },
   {
     id: '2',
@@ -27,7 +35,15 @@ let employees = [
     status: 'Active',
     location: 'New York',
     manager: 'Robert Johnson',
-    phone: '+1-555-0102'
+    phone: '+1-555-0102',
+    age: 25,
+    class: 'B',
+    subjects: ['History', 'Geography', 'English'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: true },
+    ]
   },
   {
     id: '3',
@@ -40,7 +56,15 @@ let employees = [
     status: 'Active',
     location: 'Los Angeles',
     manager: 'Sarah Williams',
-    phone: '+1-555-0103'
+    phone: '+1-555-0103',
+    age: 35,
+    class: 'A',
+    subjects: ['Mathematics', 'Physics', 'Chemistry'],
+    attendance: [
+      { date: '2024-01-15', present: false },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: true },
+    ]
   },
   {
     id: '4',
@@ -53,7 +77,15 @@ let employees = [
     status: 'Active',
     location: 'Los Angeles',
     manager: 'Robert Johnson',
-    phone: '+1-555-0104'
+    phone: '+1-555-0104',
+    age: 28,
+    class: 'C',
+    subjects: ['Biology', 'Chemistry'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: true },
+    ]
   },
   {
     id: '5',
@@ -66,7 +98,15 @@ let employees = [
     status: 'Active',
     location: 'Chicago',
     manager: 'Emily Davis',
-    phone: '+1-555-0105'
+    phone: '+1-555-0105',
+    age: 32,
+    class: 'B',
+    subjects: ['English', 'Art', 'Music'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: false },
+      { date: '2024-01-17', present: true },
+    ]
   },
   {
     id: '6',
@@ -79,7 +119,15 @@ let employees = [
     status: 'Active',
     location: 'Chicago',
     manager: 'Robert Johnson',
-    phone: '+1-555-0106'
+    phone: '+1-555-0106',
+    age: 40,
+    class: 'A',
+    subjects: ['Mathematics', 'Economics'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: true },
+    ]
   },
   {
     id: '7',
@@ -92,7 +140,15 @@ let employees = [
     status: 'Active',
     location: 'Boston',
     manager: 'Lisa Anderson',
-    phone: '+1-555-0107'
+    phone: '+1-555-0107',
+    age: 26,
+    class: 'C',
+    subjects: ['Psychology', 'Sociology'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: false },
+    ]
   },
   {
     id: '8',
@@ -105,7 +161,15 @@ let employees = [
     status: 'Active',
     location: 'Boston',
     manager: 'Robert Johnson',
-    phone: '+1-555-0108'
+    phone: '+1-555-0108',
+    age: 38,
+    class: 'B',
+    subjects: ['Management', 'Communication'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: true },
+    ]
   },
   {
     id: '9',
@@ -118,7 +182,15 @@ let employees = [
     status: 'Active',
     location: 'New York',
     manager: 'Board of Directors',
-    phone: '+1-555-0109'
+    phone: '+1-555-0109',
+    age: 50,
+    class: 'A',
+    subjects: ['Leadership', 'Strategy'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: true },
+    ]
   },
   {
     id: '10',
@@ -131,7 +203,15 @@ let employees = [
     status: 'Active',
     location: 'Seattle',
     manager: 'Michael Chen',
-    phone: '+1-555-0110'
+    phone: '+1-555-0110',
+    age: 29,
+    class: 'B',
+    subjects: ['Accounting', 'Finance'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: false },
+      { date: '2024-01-17', present: true },
+    ]
   },
   {
     id: '11',
@@ -144,7 +224,15 @@ let employees = [
     status: 'Active',
     location: 'Seattle',
     manager: 'Robert Johnson',
-    phone: '+1-555-0111'
+    phone: '+1-555-0111',
+    age: 42,
+    class: 'A',
+    subjects: ['Finance', 'Economics', 'Statistics'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: true },
+    ]
   },
   {
     id: '12',
@@ -157,9 +245,26 @@ let employees = [
     status: 'Active',
     location: 'Austin',
     manager: 'Jane Smith',
-    phone: '+1-555-0112'
+    phone: '+1-555-0112',
+    age: 24,
+    class: 'C',
+    subjects: ['Computer Science', 'Mathematics'],
+    attendance: [
+      { date: '2024-01-15', present: true },
+      { date: '2024-01-16', present: true },
+      { date: '2024-01-17', present: false },
+    ]
   }
 ];
+
+// Attendance Type
+const AttendanceType = new GraphQLObjectType({
+  name: 'Attendance',
+  fields: () => ({
+    date: { type: GraphQLString },
+    present: { type: GraphQLBoolean },
+  }),
+});
 
 // Employee Type
 const EmployeeType = new GraphQLObjectType({
@@ -176,6 +281,10 @@ const EmployeeType = new GraphQLObjectType({
     location: { type: GraphQLString },
     manager: { type: GraphQLString },
     phone: { type: GraphQLString },
+    age: { type: GraphQLInt },
+    class: { type: GraphQLString },
+    subjects: { type: new GraphQLList(GraphQLString) },
+    attendance: { type: new GraphQLList(AttendanceType) },
   }),
 });
 
