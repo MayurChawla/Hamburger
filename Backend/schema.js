@@ -364,6 +364,23 @@ const PaginationInput = new GraphQLInputObjectType({
   },
 });
 
+// Filter Input Type
+const EmployeeFilterInput = new GraphQLInputObjectType({
+  name: 'EmployeeFilterInput',
+  fields: {
+    name: { type: GraphQLString, description: 'Filter by name (partial match)' },
+    department: { type: GraphQLString, description: 'Filter by department' },
+    position: { type: GraphQLString, description: 'Filter by position' },
+    status: { type: GraphQLString, description: 'Filter by status' },
+    location: { type: GraphQLString, description: 'Filter by location' },
+    class: { type: GraphQLString, description: 'Filter by class' },
+    minAge: { type: GraphQLInt, description: 'Minimum age' },
+    maxAge: { type: GraphQLInt, description: 'Maximum age' },
+    minSalary: { type: GraphQLFloat, description: 'Minimum salary' },
+    maxSalary: { type: GraphQLFloat, description: 'Maximum salary' },
+  },
+});
+
 // Page Info Type
 const PageInfoType = new GraphQLObjectType({
   name: 'PageInfo',
@@ -386,6 +403,25 @@ const EmployeeConnectionType = new GraphQLObjectType({
     totalCount: { type: GraphQLInt },
   }),
 });
+
+// Helper function to apply filters
+function applyFilters(data, filter) {
+  if (!filter) return data;
+  
+  return data.filter(emp => {
+    if (filter.name && !emp.name.toLowerCase().includes(filter.name.toLowerCase())) return false;
+    if (filter.department && emp.department !== filter.department) return false;
+    if (filter.position && !emp.position.toLowerCase().includes(filter.position.toLowerCase())) return false;
+    if (filter.status && emp.status !== filter.status) return false;
+    if (filter.location && emp.location !== filter.location) return false;
+    if (filter.class && emp.class !== filter.class) return false;
+    if (filter.minAge !== undefined && emp.age < filter.minAge) return false;
+    if (filter.maxAge !== undefined && emp.age > filter.maxAge) return false;
+    if (filter.minSalary !== undefined && emp.salary < filter.minSalary) return false;
+    if (filter.maxSalary !== undefined && emp.salary > filter.maxSalary) return false;
+    return true;
+  });
+}
 
 // Helper function to apply sorting
 function applySorting(data, sort) {
@@ -458,20 +494,28 @@ function getUserFromContext(context) {
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
-    // Get all employees (public - no auth required for demo)
+    // Get all employees with optional filters, sorting, and pagination
     employees: {
       type: new GraphQLList(EmployeeType),
       args: {
+        filter: { type: EmployeeFilterInput },
         pagination: { type: PaginationInput },
         sort: { type: SortInput },
       },
       resolve(parent, args) {
         let result = [...employees];
         
+        // Apply filters
+        if (args.filter) {
+          result = applyFilters(result, args.filter);
+        }
+        
+        // Apply sorting
         if (args.sort) {
           result = applySorting(result, args.sort);
         }
         
+        // Apply pagination
         if (args.pagination) {
           const paginated = applyPagination(result, args.pagination);
           return paginated.data;
@@ -480,20 +524,28 @@ const RootQuery = new GraphQLObjectType({
         return result;
       },
     },
-    // Get all employees (paginated connection)
+    // Get all employees with pagination (returns connection with pageInfo)
     employeesConnection: {
       type: EmployeeConnectionType,
       args: {
+        filter: { type: EmployeeFilterInput },
         pagination: { type: PaginationInput },
         sort: { type: SortInput },
       },
       resolve(parent, args) {
         let result = [...employees];
         
+        // Apply filters
+        if (args.filter) {
+          result = applyFilters(result, args.filter);
+        }
+        
+        // Apply sorting
         if (args.sort) {
           result = applySorting(result, args.sort);
         }
         
+        // Apply pagination
         const pagination = args.pagination || { page: 1, limit: 10 };
         const paginated = applyPagination(result, pagination);
         
