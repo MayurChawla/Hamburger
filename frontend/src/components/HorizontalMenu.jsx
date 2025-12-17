@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
-import './HorizontalMenu.css';
+import '../styles/HorizontalMenu.css';
 
 const HorizontalMenu = () => {
   const [activeSubmenu, setActiveSubmenu] = useState(null);

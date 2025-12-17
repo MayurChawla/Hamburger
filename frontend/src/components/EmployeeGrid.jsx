@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import './EmployeeGrid.css';
+import '../styles/EmployeeGrid.css';
 
 const EmployeeGrid = () => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'tile'
