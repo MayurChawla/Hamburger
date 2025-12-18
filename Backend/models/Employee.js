@@ -104,9 +104,52 @@ class Employee {
 
     const employees = await query(sql, params);
 
-    // Get total count for pagination
+    // Get total count for pagination (same WHERE conditions, no LIMIT/OFFSET)
     let countSql = 'SELECT COUNT(*) as total FROM employees WHERE 1=1';
-    const countParams = params.slice(0, -2); // Remove limit and offset
+    const countParams = [];
+    
+    // Apply same filters for count query
+    if (filters.name) {
+      countSql += ' AND name LIKE ?';
+      countParams.push(`%${filters.name}%`);
+    }
+    if (filters.department) {
+      countSql += ' AND department = ?';
+      countParams.push(filters.department);
+    }
+    if (filters.position) {
+      countSql += ' AND position LIKE ?';
+      countParams.push(`%${filters.position}%`);
+    }
+    if (filters.status) {
+      countSql += ' AND status = ?';
+      countParams.push(filters.status);
+    }
+    if (filters.location) {
+      countSql += ' AND location = ?';
+      countParams.push(filters.location);
+    }
+    if (filters.class) {
+      countSql += ' AND class = ?';
+      countParams.push(filters.class);
+    }
+    if (filters.minAge !== undefined) {
+      countSql += ' AND age >= ?';
+      countParams.push(filters.minAge);
+    }
+    if (filters.maxAge !== undefined) {
+      countSql += ' AND age <= ?';
+      countParams.push(filters.maxAge);
+    }
+    if (filters.minSalary !== undefined) {
+      countSql += ' AND salary >= ?';
+      countParams.push(filters.minSalary);
+    }
+    if (filters.maxSalary !== undefined) {
+      countSql += ' AND salary <= ?';
+      countParams.push(filters.maxSalary);
+    }
+    
     const countResult = await queryOne(countSql, countParams);
     const totalCount = countResult.total;
 
