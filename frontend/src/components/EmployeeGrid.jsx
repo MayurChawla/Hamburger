@@ -851,50 +851,51 @@ const EmployeeGrid = () => {
                   </>
                 )}
               </div>
-              {isAdmin() && (
+              {isAdmin() && !isEditingModal && (
                 <div className="detail-modal-actions">
-                  {!isEditingModal ? (
+                  <button
+                    className="action-btn edit-btn"
+                    onClick={() => {
+                      setIsEditingModal(true);
+                      setModalEditForm({
+                        name: selectedEmployee.name,
+                        email: selectedEmployee.email,
+                        department: selectedEmployee.department,
+                        position: selectedEmployee.position,
+                        salary: selectedEmployee.salary,
+                        status: selectedEmployee.status,
+                        location: selectedEmployee.location,
+                        manager: selectedEmployee.manager,
+                        phone: selectedEmployee.phone,
+                      });
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M11.333 2.00001C11.5084 1.82445 11.7163 1.68507 11.9447 1.59123C12.1731 1.49738 12.4173 1.45117 12.6637 1.45534C12.9101 1.45951 13.1527 1.51395 13.3776 1.61519C13.6025 1.71643 13.8052 1.86233 13.9747 2.04435C14.1442 2.22637 14.2771 2.44074 14.3659 2.67557C14.4547 2.9104 14.4975 3.16088 14.4919 3.41235C14.4863 3.66382 14.4324 3.91154 14.3333 4.14168L14 4.66668L11.333 2.00001ZM10 3.33334L2.66667 10.6667V13.3333H5.33333L12.6667 6.00001L10 3.33334Z" fill="currentColor"/>
+                    </svg>
+                    Edit Details
+                  </button>
+                </div>
+              )}
+              {isEditingModal && (
+                <div className="detail-modal-actions">
+                  <div className="edit-actions">
                     <button
-                      className="action-btn edit-btn"
+                      className="action-btn save-btn"
+                      onClick={handleModalSave}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="action-btn cancel-btn"
                       onClick={() => {
-                        setIsEditingModal(true);
-                        setModalEditForm({
-                          name: selectedEmployee.name,
-                          email: selectedEmployee.email,
-                          department: selectedEmployee.department,
-                          position: selectedEmployee.position,
-                          salary: selectedEmployee.salary,
-                          status: selectedEmployee.status,
-                          location: selectedEmployee.location,
-                          manager: selectedEmployee.manager,
-                          phone: selectedEmployee.phone,
-                        });
+                        setIsEditingModal(false);
+                        setModalEditForm({});
                       }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M11.333 2.00001C11.5084 1.82445 11.7163 1.68507 11.9447 1.59123C12.1731 1.49738 12.4173 1.45117 12.6637 1.45534C12.9101 1.45951 13.1527 1.51395 13.3776 1.61519C13.6025 1.71643 13.8052 1.86233 13.9747 2.04435C14.1442 2.22637 14.2771 2.44074 14.3659 2.67557C14.4547 2.9104 14.4975 3.16088 14.4919 3.41235C14.4863 3.66382 14.4324 3.91154 14.3333 4.14168L14 4.66668L11.333 2.00001ZM10 3.33334L2.66667 10.6667V13.3333H5.33333L12.6667 6.00001L10 3.33334Z" fill="currentColor"/>
-                      </svg>
-                      Edit Details
+                      Cancel
                     </button>
-                  ) : (
-                    <div className="edit-actions">
-                      <button
-                        className="action-btn save-btn"
-                        onClick={handleModalSave}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="action-btn cancel-btn"
-                        onClick={() => {
-                          setIsEditingModal(false);
-                          setModalEditForm({});
-                        }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
