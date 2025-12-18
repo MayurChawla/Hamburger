@@ -174,7 +174,7 @@ class Employee {
     await execute(
       `INSERT INTO employees 
        (id, name, email, department, position, salary, start_date, status, location, manager, phone, age, class)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id, name, email, department, position, salary, startDate, status, location, manager, phone, age, className]
     );
 

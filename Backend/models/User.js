@@ -48,6 +48,11 @@ class User {
     if (existingUser) {
       throw new ConflictError('User with this username or email already exists');
     }
+    // Also check by email
+    const existingByEmail = await this.findByEmail(email);
+    if (existingByEmail) {
+      throw new ConflictError('User with this email already exists');
+    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);

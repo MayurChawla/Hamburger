@@ -31,33 +31,95 @@ class AuthService {
     validateRequired(usernameOrEmail, 'Username or email');
     validateRequired(password, 'Password');
 
-    // Find user
-    const user = await User.findByUsernameOrEmail(usernameOrEmail);
-    if (!user) {
+    // Hardcoded credentials for development (no encryption needed)
+    const hardcodedUsers = {
+      'admin': {
+        id: '1',
+        username: 'admin',
+        email: 'admin@example.com',
+        role: 'admin',
+        employee_id: null,
+      },
+      'admin@example.com': {
+        id: '1',
+        username: 'admin',
+        email: 'admin@example.com',
+        role: 'admin',
+        employee_id: null,
+      },
+      'john_doe': {
+        id: '2',
+        username: 'john_doe',
+        email: 'john@example.com',
+        role: 'employee',
+        employee_id: '1',
+      },
+      'john@example.com': {
+        id: '2',
+        username: 'john_doe',
+        email: 'john@example.com',
+        role: 'employee',
+        employee_id: '1',
+      },
+    };
+
+    // Hardcoded passwords
+    const hardcodedPasswords = {
+      'admin': 'admin123',
+      'admin@example.com': 'admin123',
+      'john_doe': 'employee123',
+      'john@example.com': 'employee123',
+    };
+
+    // Check hardcoded credentials first
+    const user = hardcodedUsers[usernameOrEmail];
+    const expectedPassword = hardcodedPasswords[usernameOrEmail];
+
+    if (user && password === expectedPassword) {
+      // Generate token
+      const token = this.generateToken(user);
+
+      logger.info(`User logged in (hardcoded): ${user.username}`);
+
+      return {
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          employeeId: user.employee_id,
+        },
+      };
+    }
+
+    // Fallback to database lookup if hardcoded credentials don't match
+    const dbUser = await User.findByUsernameOrEmail(usernameOrEmail);
+    if (!dbUser) {
       logger.warn(`Login attempt with invalid username/email: ${usernameOrEmail}`);
       throw new AuthenticationError('Invalid credentials');
     }
 
     // Verify password
-    const isValidPassword = await User.verifyPassword(password, user.password);
+    const isValidPassword = await User.verifyPassword(password, dbUser.password);
     if (!isValidPassword) {
       logger.warn(`Login attempt with invalid password for user: ${usernameOrEmail}`);
       throw new AuthenticationError('Invalid credentials');
     }
 
     // Generate token
-    const token = this.generateToken(user);
+    const token = this.generateToken(dbUser);
 
-    logger.info(`User logged in: ${user.username}`);
+    logger.info(`User logged in: ${dbUser.username}`);
 
     return {
       token,
       user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        employeeId: user.employee_id,
+        id: dbUser.id,
+        username: dbUser.username,
+        email: dbUser.email,
+        role: dbUser.role,
+        employeeId: dbUser.employee_id,
       },
     };
   }
