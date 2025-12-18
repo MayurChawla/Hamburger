@@ -1,63 +1,81 @@
 const express = require('express');
 const { createHandler } = require('graphql-http/lib/use/express');
-const schema = require('./schema');
 const cors = require('cors');
-const auth = require('./auth');
+const helmet = require('helmet');
+const config = require('./config');
+const schema = require('./graphql/schema');
+const { authenticate } = require('./middleware/auth');
+const { errorHandler } = require('./utils/errors');
+const { apiLimiter } = require('./middleware/rateLimiter');
+const { initializeDatabase } = require('./database/connection');
+const { runMigrations } = require('./database/migrate');
+const logger = require('./utils/logger');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
 
-// Middleware
-app.use(cors());
+// Security middleware
+app.use(helmet());
 
-// Parse JSON for non-GraphQL routes
+// CORS configuration
+app.use(cors({
+  origin: config.cors.origin,
+  credentials: true,
+}));
+
+// Rate limiting
+app.use('/graphql', apiLimiter);
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Request logging middleware
 app.use((req, res, next) => {
-  if (req.path === '/graphql') {
-    // Skip body parsing for GraphQL endpoint - let graphql-http handle it
-    return next();
-  }
-  express.json()(req, res, next);
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ 
-    errors: [{ message: err.message || 'Internal server error' }] 
+  logger.info(`${req.method} ${req.path}`, {
+    ip: req.ip,
+    userAgent: req.get('user-agent'),
   });
+  next();
 });
 
-// GraphQL endpoint - handle POST requests with authentication
-app.post('/graphql', createHandler({ 
+// Authentication middleware (adds user to request if token is present)
+app.use(authenticate);
+
+// GraphQL endpoint
+app.post('/graphql', createHandler({
   schema,
   context: async (req) => {
-    let user = null;
-    try {
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.substring(7);
-        const decoded = auth.verifyToken(token);
-        if (decoded) {
-          const userData = auth.getUserById(decoded.id);
-          if (userData) {
-            user = {
-              id: userData.id,
-              username: userData.username,
-              email: userData.email,
-              role: userData.role,
-              employeeId: userData.employeeId,
-            };
-          }
-        }
-      }
-    } catch (error) {
-      // User remains null if authentication fails
+    return {
+      user: req.user || null,
+      req,
+    };
+  },
+  formatError: (error) => {
+    logger.error('GraphQL Error:', {
+      message: error.message,
+      path: error.path,
+      extensions: error.extensions,
+    });
+
+    // Don't expose internal errors in production
+    if (config.env === 'production' && !error.extensions?.code) {
+      return {
+        message: 'Internal server error',
+        extensions: {
+          code: 'INTERNAL_SERVER_ERROR',
+        },
+      };
     }
-    return { user };
+
+    return {
+      message: error.message,
+      extensions: error.extensions,
+      path: error.path,
+    };
   },
 }));
 
-// GraphQL endpoint - handle GET requests with a simple query interface
+// GraphQL GET endpoint with simple query interface
 app.get('/graphql', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -270,10 +288,17 @@ app.get('/graphql', (req, res) => {
 }\`,
           create: \`mutation {
   createEmployee(
-    name: "Alice Johnson"
-    age: 28
-    class: "C"
-    subjects: ["Mathematics", "Science", "English"]
+    input: {
+      name: "Alice Johnson"
+      email: "alice@example.com"
+      department: "Engineering"
+      position: "Developer"
+      salary: 80000
+      startDate: "2024-01-20"
+      age: 28
+      class: "C"
+      subjects: ["Mathematics", "Science", "English"]
+    }
   ) {
     id
     name
@@ -284,7 +309,7 @@ app.get('/graphql', (req, res) => {
 }\`,
           attendance: \`mutation {
   markAttendance(
-    id: "1"
+    employeeId: "1"
     date: "2024-01-20"
     present: true
   ) {
@@ -299,9 +324,11 @@ app.get('/graphql', (req, res) => {
           update: \`mutation {
   updateEmployee(
     id: "1"
-    name: "John Updated"
-    age: 31
-    subjects: ["Math", "Physics"]
+    input: {
+      name: "John Updated"
+      age: 31
+      subjects: ["Math", "Physics"]
+    }
   ) {
     id
     name
@@ -370,7 +397,17 @@ app.get('/graphql', (req, res) => {
   `);
 });
 
-// Simple GraphiQL interface
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'GraphQL API is running',
+    timestamp: new Date().toISOString(),
+    environment: config.env,
+  });
+});
+
+// API documentation endpoint
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -434,19 +471,19 @@ app.get('/', (req, res) => {
         
         <h2>📡 GraphQL Endpoint</h2>
         <div class="endpoint">
-          <strong>POST</strong> http://localhost:${PORT}/graphql
+          <strong>POST</strong> http://localhost:${config.port}/graphql
         </div>
 
         <h2>🧪 Testing Methods</h2>
         
         <h3>1. Using GraphiQL Online</h3>
         <p>Visit: <a href="https://lucasconstantino.github.io/graphiql-online/" target="_blank">GraphiQL Online</a></p>
-        <p>Set the endpoint URL to: <code>http://localhost:${PORT}/graphql</code></p>
+        <p>Set the endpoint URL to: <code>http://localhost:${config.port}/graphql</code></p>
 
         <h3>2. Using Postman</h3>
         <ul>
           <li>Create a new POST request</li>
-          <li>URL: <code>http://localhost:${PORT}/graphql</code></li>
+          <li>URL: <code>http://localhost:${config.port}/graphql</code></li>
           <li>Headers: <code>Content-Type: application/json</code></li>
           <li>Body (raw JSON): See examples below</li>
         </ul>
@@ -473,34 +510,59 @@ app.get('/', (req, res) => {
         <div class="example">
           <h4>Mutation: Create Employee</h4>
           <pre>{
-  "query": "mutation { createEmployee(name: \\"Alice\\", age: 28, class: \\"C\\", subjects: [\\"Math\\", \\"Science\\"]) { id name class } }"
-}</pre>
-        </div>
-
-        <div class="example">
-          <h4>Mutation: Mark Attendance</h4>
-          <pre>{
-  "query": "mutation { markAttendance(id: \\"1\\", date: \\"2024-01-20\\", present: true) { id name attendance { date present } } }"
+  "query": "mutation { createEmployee(input: { name: \\"Alice\\", email: \\"alice@example.com\\", department: \\"Engineering\\", position: \\"Developer\\", salary: 80000, startDate: \\"2024-01-20\\" }) { id name } }"
 }</pre>
         </div>
 
         <h2>✅ Health Check</h2>
-        <p>Visit: <a href="/health">http://localhost:${PORT}/health</a></p>
+        <p>Visit: <a href="/health">http://localhost:${config.port}/health</a></p>
       </div>
     </body>
     </html>
   `);
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'GraphQL API is running' });
+// Error handling middleware (must be last)
+app.use(errorHandler);
+
+// Initialize database and start server
+const startServer = async () => {
+  try {
+    // Initialize database
+    await initializeDatabase();
+    
+    // Run migrations
+    await runMigrations();
+    
+    // Start server
+    app.listen(config.port, () => {
+      logger.info(`🚀 GraphQL server is running on http://localhost:${config.port}/graphql`);
+      logger.info(`📊 Health check: http://localhost:${config.port}/health`);
+      logger.info(`🌐 API Documentation: http://localhost:${config.port}/`);
+      logger.info(`📝 Environment: ${config.env}`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Handle graceful shutdown
+process.on('SIGTERM', async () => {
+  logger.info('SIGTERM received, shutting down gracefully...');
+  const { closeDatabase } = require('./database/connection');
+  await closeDatabase();
+  process.exit(0);
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 GraphQL server is running on http://localhost:${PORT}/graphql`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🌐 API Documentation: http://localhost:${PORT}/`);
+process.on('SIGINT', async () => {
+  logger.info('SIGINT received, shutting down gracefully...');
+  const { closeDatabase } = require('./database/connection');
+  await closeDatabase();
+  process.exit(0);
 });
 
+// Start the server
+startServer();
+
+module.exports = app;
