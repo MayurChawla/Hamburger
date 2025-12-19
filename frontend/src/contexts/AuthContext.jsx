@@ -20,6 +20,8 @@ export const AuthProvider = ({ children }) => {
 
   const validateToken = async (token) => {
     try {
+      console.log('[Auth] Validating token...', token ? 'Token exists' : 'No token');
+      
       const response = await fetch(GRAPHQL_ENDPOINT, {
         method: 'POST',
         headers: {
@@ -40,6 +42,8 @@ export const AuthProvider = ({ children }) => {
           `,
         }),
       });
+      
+      console.log('[Auth] Response status:', response.status);
 
       if (!response.ok) {
         // Server returned an error status
@@ -56,6 +60,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       const result = await response.json();
+      console.log('[Auth] Response data:', result);
 
       // Check for GraphQL errors
       if (result.errors) {

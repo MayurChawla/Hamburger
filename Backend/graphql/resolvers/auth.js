@@ -16,11 +16,16 @@ const Query = {
     type: UserType,
     resolve: async (parent, args, context) => {
       if (!context.user) {
+        console.log('[me query] No user in context');
         return null;
       }
       try {
-        return await AuthService.getCurrentUser(context.user.id);
+        console.log('[me query] Looking up user:', context.user.id);
+        const user = await AuthService.getCurrentUser(context.user.id);
+        console.log('[me query] User found:', user ? user.username : 'null');
+        return user;
       } catch (error) {
+        console.error('[me query] Error getting user:', error.message);
         return null;
       }
     },

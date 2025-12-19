@@ -35,16 +35,24 @@ const authenticate = (req, res, next) => {
   
   if (!token) {
     // For GraphQL, we allow unauthenticated requests but user will be null
+    console.log('[Auth Middleware] No token found in request');
+    logger.info('No token found in request');
     req.user = null;
     return next();
   }
 
+  console.log('[Auth Middleware] Token found, verifying...');
+  logger.info('Token found, verifying...');
   const decoded = verifyToken(token);
   if (!decoded) {
+    console.log('[Auth Middleware] Token verification failed - token is invalid or expired');
+    logger.warn('Token verification failed - token is invalid or expired');
     req.user = null;
     return next();
   }
 
+  console.log('[Auth Middleware] Token verified successfully for user:', decoded.id);
+  logger.info('Token verified successfully for user:', decoded.id);
   req.user = {
     id: decoded.id,
     username: decoded.username,

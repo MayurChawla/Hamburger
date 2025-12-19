@@ -44,9 +44,34 @@ app.use(authenticate);
 // GraphQL endpoint
 app.post('/graphql', createHandler({
   schema,
-  context: async (req) => {
+  context: async (req, res, params) => {
+    // The middleware sets req.user, but graphql-http might pass a different req object
+    // So we need to re-extract and verify the token in the context if req.user is not set
+    let user = req.user;
+    
+    if (!user) {
+      // Try to extract user from token directly in context
+      const { extractToken, verifyToken } = require('./middleware/auth');
+      const token = extractToken(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) {
+          user = {
+            id: decoded.id,
+            username: decoded.username,
+            email: decoded.email,
+            role: decoded.role,
+            employeeId: decoded.employeeId,
+          };
+          console.log('[GraphQL Context] User extracted from token:', user.id);
+        }
+      }
+    }
+    
+    console.log('[GraphQL Context] Final user:', user ? user.id : 'null');
+    
     return {
-      user: req.user || null,
+      user: user || null,
       req,
     };
   },
