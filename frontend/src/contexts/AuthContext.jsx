@@ -41,17 +41,61 @@ export const AuthProvider = ({ children }) => {
         }),
       });
 
+      if (!response.ok) {
+        // Server returned an error status
+        // Only logout on 401/403 (authentication errors)
+        if (response.status === 401 || response.status === 403) {
+          console.error('Token validation failed: Unauthorized');
+          logout();
+        } else {
+          // Other server errors - might be temporary, keep token
+          console.warn('Token validation: Server error', response.status);
+          setUser(null);
+        }
+        return;
+      }
+
       const result = await response.json();
 
+      // Check for GraphQL errors
       if (result.errors) {
-        logout();
-      } else {
+        // Check if any error is authentication-related
+        const authError = result.errors.some(
+          error => error.message.toLowerCase().includes('authentication') || 
+                   error.message.toLowerCase().includes('unauthorized') ||
+                   error.message.toLowerCase().includes('token') ||
+                   error.message.toLowerCase().includes('expired') ||
+                   error.message.toLowerCase().includes('invalid')
+        );
+        
+        if (authError) {
+          console.error('Token validation failed: Authentication error');
+          logout();
+        } else {
+          // Other GraphQL errors - might be temporary, keep token
+          console.warn('Token validation warning:', result.errors);
+          setUser(null);
+        }
+      } else if (result.data && result.data.me) {
+        // Successfully validated - user is authenticated
         setUser(result.data.me);
         localStorage.setItem('authToken', token);
+      } else if (result.data && result.data.me === null) {
+        // Token was sent but no user returned - token is invalid
+        console.warn('Token validation: Invalid token (no user returned)');
+        logout();
+      } else {
+        // Unexpected response format
+        console.warn('Token validation: Unexpected response format');
+        setUser(null);
       }
     } catch (error) {
-      console.error('Token validation failed:', error);
-      logout();
+      // Network errors or other fetch failures
+      // Don't logout on network errors - might be temporary connection issue
+      console.error('Token validation failed (network error):', error);
+      // Keep the token in localStorage but don't set user
+      // This allows the user to retry when network is back
+      setUser(null);
     } finally {
       setLoading(false);
     }
