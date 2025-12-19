@@ -103,8 +103,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('authToken');
   };
 
-  const isAdmin = () => user?.role === 'admin';
-  const isEmployee = () => user?.role === 'employee';
+  const isAdmin = () => user?.role?.toLowerCase() === 'admin';
+  const isEmployee = () => user?.role?.toLowerCase() === 'employee';
   const isAuthenticated = () => !!user;
 
   const value = {
