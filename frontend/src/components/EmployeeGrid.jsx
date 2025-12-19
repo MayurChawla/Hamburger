@@ -31,10 +31,6 @@ const EmployeeGrid = () => {
   });
   const [activeFilters, setActiveFilters] = useState({});
 
-  // Edit state
-  const [editingEmployee, setEditingEmployee] = useState(null);
-  const [editForm, setEditForm] = useState({});
-
   // Modal edit state
   const [isEditingModal, setIsEditingModal] = useState(false);
   const [modalEditForm, setModalEditForm] = useState({});
@@ -207,83 +203,30 @@ const EmployeeGrid = () => {
     fetchEmployees(1, {});
   };
 
-  // Edit functions (Admin only)
-  const startEditing = (employee) => {
-    if (!isAdmin()) return;
-    setEditingEmployee(employee.id);
-    setEditForm({
-      name: employee.name,
-      email: employee.email,
-      department: employee.department,
-      position: employee.position,
-      salary: employee.salary,
-      status: employee.status,
-      location: employee.location,
-      manager: employee.manager,
-      phone: employee.phone,
-    });
-  };
-
-  const cancelEditing = () => {
-    setEditingEmployee(null);
-    setEditForm({});
-  };
-
-  const saveEmployee = async () => {
-    if (!isAdmin()) return;
-
-    try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(GRAPHQL_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          query: `
-            mutation UpdateEmployee($id: String!, $name: String, $email: String, $department: String, $position: String, $salary: Float, $status: String, $location: String, $manager: String, $phone: String) {
-              updateEmployee(id: $id, name: $name, email: $email, department: $department, position: $position, salary: $salary, status: $status, location: $location, manager: $manager, phone: $phone) {
-                id
-                name
-                email
-                department
-                position
-                salary
-                status
-                location
-                manager
-                phone
-              }
-            }
-          `,
-          variables: {
-            id: editingEmployee,
-            ...editForm,
-          },
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.errors) {
-        throw new Error(result.errors[0].message);
-      }
-
-      // Update the employee in the list
-      setEmployees(employees.map(emp =>
-        emp.id === editingEmployee ? result.data.updateEmployee : emp
-      ));
-
-      cancelEditing();
-    } catch (error) {
-      console.error('Error updating employee:', error);
-      alert('Error updating employee: ' + error.message);
+  // Open modal in edit mode
+  const openEditModal = async (employee, e) => {
+    if (e) {
+      e.stopPropagation();
     }
-  };
-
-  const handleEditFormChange = (field, value) => {
-    setEditForm(prev => ({ ...prev, [field]: value }));
+    if (!isAdmin()) return;
+    
+    // Fetch full employee details including attendance
+    const fullEmployee = await fetchEmployeeDetails(employee.id);
+    const employeeToEdit = fullEmployee || employee;
+    
+    setSelectedEmployee(employeeToEdit);
+    setIsEditingModal(true);
+    setModalEditForm({
+      name: employeeToEdit.name,
+      email: employeeToEdit.email,
+      department: employeeToEdit.department,
+      position: employeeToEdit.position,
+      salary: employeeToEdit.salary,
+      status: employeeToEdit.status,
+      location: employeeToEdit.location,
+      manager: employeeToEdit.manager,
+      phone: employeeToEdit.phone,
+    });
   };
 
   const handleModalEditFormChange = (field, value) => {
@@ -291,7 +234,9 @@ const EmployeeGrid = () => {
   };
 
   const handleModalSave = async () => {
-    if (!isAdmin()) return;
+    if (!isAdmin()) {
+      return;
+    }
 
     try {
       const token = localStorage.getItem('authToken');
@@ -303,8 +248,8 @@ const EmployeeGrid = () => {
         },
         body: JSON.stringify({
           query: `
-            mutation UpdateEmployee($id: String!, $name: String, $email: String, $department: String, $position: String, $salary: Float, $status: String, $location: String, $manager: String, $phone: String) {
-              updateEmployee(id: $id, name: $name, email: $email, department: $department, position: $position, salary: $salary, status: $status, location: $location, manager: $manager, phone: $phone) {
+            mutation UpdateEmployee($id: String!, $input: UpdateEmployeeInput!) {
+              updateEmployee(id: $id, input: $input) {
                 id
                 name
                 email
@@ -320,7 +265,7 @@ const EmployeeGrid = () => {
           `,
           variables: {
             id: selectedEmployee.id,
-            ...modalEditForm,
+            input: modalEditForm,
           },
         }),
       });
@@ -392,6 +337,19 @@ const EmployeeGrid = () => {
     return () => document.removeEventListener('keydown', handleEscape);
   }, []);
 
+  // Log modal and edit state changes for role-based access verification
+  useEffect(() => {
+    if (selectedEmployee) {
+      console.log('[Modal State Change] Modal is open');
+      console.log('[Modal State Change] Current User:', user?.username, 'Role:', user?.role);
+      console.log('[Modal State Change] Is Admin:', isAdmin());
+      console.log('[Modal State Change] Is Employee:', isEmployee());
+      console.log('[Modal State Change] Edit Mode Active:', isEditingModal);
+      console.log('[Modal State Change] Edit Button Should Be Visible:', isAdmin() && !isEditingModal);
+      console.log('[Modal State Change] Save/Cancel Buttons Should Be Visible:', isEditingModal);
+    }
+  }, [selectedEmployee, isEditingModal, user]);
+
   const handleTileClick = async (employee, e) => {
     // Don't open modal if clicking on menu button or dropdown
     if (e.target.closest('.tile-menu-container') || e.target.closest('.tile-menu-dropdown')) {
@@ -401,15 +359,31 @@ const EmployeeGrid = () => {
     const fullEmployee = await fetchEmployeeDetails(employee.id);
     setSelectedEmployee(fullEmployee || employee);
     setOpenMenuId(null); // Close any open menus
+    
+    // Console log for role-based access verification
+    console.log('[Modal Open] User Role:', user?.role);
+    console.log('[Modal Open] Is Admin:', isAdmin());
+    console.log('[Modal Open] Is Employee:', isEmployee());
+    console.log('[Modal Open] Editing Allowed:', isAdmin());
+    console.log('[Modal Open] View Only Mode:', !isAdmin());
   };
 
   const handleRowClick = async (employee) => {
     const fullEmployee = await fetchEmployeeDetails(employee.id);
     setSelectedEmployee(fullEmployee || employee);
+    
+    // Console log for role-based access verification
+    console.log('[Modal Open] User Role:', user?.role);
+    console.log('[Modal Open] Is Admin:', isAdmin());
+    console.log('[Modal Open] Is Employee:', isEmployee());
+    console.log('[Modal Open] Editing Allowed:', isAdmin());
+    console.log('[Modal Open] View Only Mode:', !isAdmin());
   };
 
   const closeDetailModal = () => {
     setSelectedEmployee(null);
+    setIsEditingModal(false);
+    setModalEditForm({});
   };
 
   if (loading) {
@@ -496,137 +470,30 @@ const EmployeeGrid = () => {
                 <th>Location</th>
                 <th>Manager</th>
                 <th>Phone</th>
-                {isAdmin() && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {employees.map((employee) => (
-                <tr key={employee.id} style={{ cursor: isAdmin() ? 'pointer' : 'default' }} onClick={() => handleRowClick(employee)}>
+                <tr key={employee.id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(employee)}>
                   <td className="cell-id">{employee.id}</td>
-                  <td className="cell-name">
-                    {editingEmployee === employee.id ? (
-                      <input
-                        type="text"
-                        value={editForm.name}
-                        onChange={(e) => handleEditFormChange('name', e.target.value)}
-                        className="edit-input"
-                      />
-                    ) : (
-                      employee.name
-                    )}
-                  </td>
-                  <td className="cell-email">
-                    {editingEmployee === employee.id ? (
-                      <input
-                        type="email"
-                        value={editForm.email}
-                        onChange={(e) => handleEditFormChange('email', e.target.value)}
-                        className="edit-input"
-                      />
-                    ) : (
-                      employee.email
-                    )}
-                  </td>
+                  <td className="cell-name">{employee.name}</td>
+                  <td className="cell-email">{employee.email}</td>
                   <td className="cell-department">
-                    {editingEmployee === employee.id ? (
-                      <select
-                        value={editForm.department}
-                        onChange={(e) => handleEditFormChange('department', e.target.value)}
-                        className="edit-select"
-                      >
-                        <option value="Engineering">Engineering</option>
-                        <option value="Sales">Sales</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="HR">HR</option>
-                        <option value="Finance">Finance</option>
-                        <option value="Executive">Executive</option>
-                      </select>
-                    ) : (
-                      <span className={`dept-badge dept-${employee.department.toLowerCase().replace(/\s+/g, '-')}`}>
-                        {employee.department}
-                      </span>
-                    )}
+                    <span className={`dept-badge dept-${employee.department.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {employee.department}
+                    </span>
                   </td>
-                  <td className="cell-position">
-                    {editingEmployee === employee.id ? (
-                      <input
-                        type="text"
-                        value={editForm.position}
-                        onChange={(e) => handleEditFormChange('position', e.target.value)}
-                        className="edit-input"
-                      />
-                    ) : (
-                      employee.position
-                    )}
-                  </td>
-                  <td className="cell-salary">
-                    {editingEmployee === employee.id ? (
-                      <input
-                        type="number"
-                        value={editForm.salary}
-                        onChange={(e) => handleEditFormChange('salary', Number(e.target.value))}
-                        className="edit-input"
-                      />
-                    ) : (
-                      formatCurrency(employee.salary)
-                    )}
-                  </td>
+                  <td className="cell-position">{employee.position}</td>
+                  <td className="cell-salary">{formatCurrency(employee.salary)}</td>
                   <td className="cell-date">{formatDate(employee.startDate)}</td>
                   <td className="cell-status">
-                    {editingEmployee === employee.id ? (
-                      <select
-                        value={editForm.status}
-                        onChange={(e) => handleEditFormChange('status', e.target.value)}
-                        className="edit-select"
-                      >
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                      </select>
-                    ) : (
-                      <span className={`status-badge status-${employee.status.toLowerCase()}`}>
-                        {employee.status}
-                      </span>
-                    )}
+                    <span className={`status-badge status-${employee.status.toLowerCase()}`}>
+                      {employee.status}
+                    </span>
                   </td>
-                  <td className="cell-location">
-                    {editingEmployee === employee.id ? (
-                      <input
-                        type="text"
-                        value={editForm.location}
-                        onChange={(e) => handleEditFormChange('location', e.target.value)}
-                        className="edit-input"
-                      />
-                    ) : (
-                      employee.location
-                    )}
-                  </td>
+                  <td className="cell-location">{employee.location}</td>
                   <td className="cell-manager">{employee.manager}</td>
-                  <td className="cell-phone">
-                    {editingEmployee === employee.id ? (
-                      <input
-                        type="tel"
-                        value={editForm.phone}
-                        onChange={(e) => handleEditFormChange('phone', e.target.value)}
-                        className="edit-input"
-                      />
-                    ) : (
-                      employee.phone
-                    )}
-                  </td>
-                  <td className="cell-actions">
-                    {isAdmin() && (
-                      <div className="action-buttons">
-                        {editingEmployee === employee.id ? (
-                          <>
-                            <button onClick={saveEmployee} className="action-btn save-btn">Save</button>
-                            <button onClick={cancelEditing} className="action-btn cancel-btn">Cancel</button>
-                          </>
-                        ) : (
-                          <button onClick={() => startEditing(employee)} className="action-btn edit-btn">Edit</button>
-                        )}
-                      </div>
-                    )}
-                  </td>
+                  <td className="cell-phone">{employee.phone}</td>
                 </tr>
               ))}
             </tbody>
@@ -666,15 +533,19 @@ const EmployeeGrid = () => {
                     </button>
                     {openMenuId === employee.id && (
                       <div className="tile-menu-dropdown" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          className="menu-item"
-                          onClick={(e) => handleMenuAction(employee.id, 'edit', e)}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M11.333 2.00001C11.5084 1.82445 11.7163 1.68507 11.9447 1.59123C12.1731 1.49738 12.4173 1.45117 12.6637 1.45534C12.9101 1.45951 13.1527 1.51395 13.3776 1.61519C13.6025 1.71643 13.8052 1.86233 13.9747 2.04435C14.1442 2.22637 14.2771 2.44074 14.3659 2.67557C14.4547 2.9104 14.4975 3.16088 14.4919 3.41235C14.4863 3.66382 14.4324 3.91154 14.3333 4.14168L14 4.66668L11.333 2.00001ZM10 3.33334L2.66667 10.6667V13.3333H5.33333L12.6667 6.00001L10 3.33334Z" fill="currentColor"/>
-                          </svg>
-                          Edit
-                        </button>
+                    <button
+                      className="menu-item"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(employee, e);
+                        setOpenMenuId(null);
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11.333 2.00001C11.5084 1.82445 11.7163 1.68507 11.9447 1.59123C12.1731 1.49738 12.4173 1.45117 12.6637 1.45534C12.9101 1.45951 13.1527 1.51395 13.3776 1.61519C13.6025 1.71643 13.8052 1.86233 13.9747 2.04435C14.1442 2.22637 14.2771 2.44074 14.3659 2.67557C14.4547 2.9104 14.4975 3.16088 14.4919 3.41235C14.4863 3.66382 14.4324 3.91154 14.3333 4.14168L14 4.66668L11.333 2.00001ZM10 3.33334L2.66667 10.6667V13.3333H5.33333L12.6667 6.00001L10 3.33334Z" fill="currentColor"/>
+                      </svg>
+                      Edit
+                    </button>
                         <button
                           className="menu-item"
                           onClick={(e) => handleMenuAction(employee.id, 'flag', e)}
@@ -685,16 +556,20 @@ const EmployeeGrid = () => {
                           </svg>
                           Flag
                         </button>
-                        <button
-                          className="menu-item"
-                          onClick={(e) => handleMenuAction(employee.id, 'view', e)}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M8 2.66667C4.66667 2.66667 2 6 2 8C2 10 4.66667 13.3333 8 13.3333C11.3333 13.3333 14 10 14 8C14 6 11.3333 2.66667 8 2.66667Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                            <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                          </svg>
-                          View Details
-                        </button>
+                    <button
+                      className="menu-item"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleTileClick(employee, e);
+                        setOpenMenuId(null);
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 2.66667C4.66667 2.66667 2 6 2 8C2 10 4.66667 13.3333 8 13.3333C11.3333 13.3333 14 10 14 8C14 6 11.3333 2.66667 8 2.66667Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                        <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      </svg>
+                      View Details
+                    </button>
                         <button
                           className="menu-item"
                           onClick={(e) => handleMenuAction(employee.id, 'duplicate', e)}
@@ -856,6 +731,9 @@ const EmployeeGrid = () => {
                   <button
                     className="action-btn edit-btn"
                     onClick={() => {
+                      console.log('[Edit Button Clicked] User Role:', user?.role);
+                      console.log('[Edit Button Clicked] Is Admin Check:', isAdmin());
+                      console.log('[Edit Button Clicked] Entering Edit Mode');
                       setIsEditingModal(true);
                       setModalEditForm({
                         name: selectedEmployee.name,
@@ -889,6 +767,7 @@ const EmployeeGrid = () => {
                     <button
                       className="action-btn cancel-btn"
                       onClick={() => {
+                        console.log('[Cancel Edit] Exiting edit mode');
                         setIsEditingModal(false);
                         setModalEditForm({});
                       }}
