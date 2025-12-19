@@ -8,13 +8,7 @@ class EmployeeService {
    * Get all employees with filters, sorting, and pagination
    */
   static async getEmployees(filters = {}, sort = {}, pagination = {}, user = null) {
-    // Apply access control
-    // Employees can only see their own data unless they're admin
-    if (user && user.role === 'employee' && user.employeeId) {
-      // Employee can only access their own data
-      return await this.getEmployeeById(user.employeeId, user);
-    }
-
+    // Both admin and employee can see all employees
     const result = await Employee.findAll(filters, sort, pagination);
     return result;
   }
@@ -28,11 +22,7 @@ class EmployeeService {
       throw new NotFoundError('Employee');
     }
 
-    // Check access control
-    if (user && user.role === 'employee' && user.employeeId !== id) {
-      throw new AuthorizationError('You can only access your own employee data');
-    }
-
+    // Both admin and employee can access any employee data
     return employee;
   }
 
@@ -72,10 +62,7 @@ class EmployeeService {
    * Update employee
    */
   static async updateEmployee(id, updates, user = null) {
-    // Check access control
-    if (user && user.role === 'employee' && user.employeeId !== id) {
-      throw new AuthorizationError('You can only update your own employee data');
-    }
+    // Both admin and employee can update any employee data
 
     // Validation
     if (updates.email && !validateEmail(updates.email)) {
@@ -113,10 +100,7 @@ class EmployeeService {
    * Mark attendance
    */
   static async markAttendance(employeeId, date, present, user = null) {
-    // Check access control
-    if (user && user.role === 'employee' && user.employeeId !== employeeId) {
-      throw new AuthorizationError('You can only mark your own attendance');
-    }
+    // Both admin and employee can mark attendance for any employee
 
     // Validation
     validateRequired(date, 'Date');

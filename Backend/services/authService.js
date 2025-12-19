@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { queryOne } = require('../database/connection');
 const config = require('../config');
 const { AuthenticationError, ValidationError } = require('../utils/errors');
 const { validateEmail, validateRequired, validateStringLength } = require('../utils/validation');
@@ -52,14 +53,14 @@ class AuthService {
         username: 'john_doe',
         email: 'john@example.com',
         role: 'employee',
-        employee_id: '1',
+        employee_id: null, // Will be set from database
       },
       'john@example.com': {
         id: '2',
         username: 'john_doe',
         email: 'john@example.com',
         role: 'employee',
-        employee_id: '1',
+        employee_id: null, // Will be set from database
       },
     };
 
@@ -76,19 +77,80 @@ class AuthService {
     const expectedPassword = hardcodedPasswords[usernameOrEmail];
 
     if (user && password === expectedPassword) {
-      // Generate token
-      const token = this.generateToken(user);
+      // Always try to get the actual user data from database first (like admin does)
+      // This ensures employee_id is correct and matches actual database records
+      let dbUser = null;
+      try {
+        dbUser = await User.findByUsernameOrEmail(usernameOrEmail);
+        if (dbUser) {
+          logger.info(`[AuthService] Found user in database: ${dbUser.username}, employee_id: ${dbUser.employee_id}`);
+        }
+      } catch (error) {
+        logger.warn(`[AuthService] Could not fetch user from database: ${error.message}`);
+      }
 
-      logger.info(`User logged in (hardcoded): ${user.username}`);
+      // Use database user data if available, otherwise fall back to hardcoded values
+      let actualEmployeeId = user.employee_id;
+      let userId = user.id;
+      let userRole = user.role;
+      let userUsername = user.username;
+      let userEmail = user.email;
+
+      if (dbUser) {
+        // Use database values (this ensures employee_id matches actual database)
+        userId = dbUser.id;
+        userRole = dbUser.role;
+        userUsername = dbUser.username;
+        userEmail = dbUser.email;
+        actualEmployeeId = dbUser.employee_id;
+        logger.info(`[AuthService] Using database user data - employee_id: ${actualEmployeeId}`);
+      } else {
+        // Fallback to hardcoded values, but for employees, try to get employee_id from database
+        if (user.role === 'employee') {
+          try {
+            // Try to get the employee ID from the users table first (it should be set by seed script)
+            const employeeUser = await User.findByUsernameOrEmail(usernameOrEmail);
+            if (employeeUser && employeeUser.employee_id) {
+              actualEmployeeId = employeeUser.employee_id;
+              logger.info(`[AuthService] Using employee user data from database - employee_id: ${actualEmployeeId}`);
+            } else {
+              // Fallback: Try to get the first employee ID
+              const firstEmployee = await queryOne('SELECT id FROM employees LIMIT 1');
+              if (firstEmployee) {
+                actualEmployeeId = firstEmployee.id;
+                logger.info(`[AuthService] Using first employee ID from database: ${actualEmployeeId}`);
+              } else {
+                logger.warn(`[AuthService] No employees found in database, using hardcoded value: ${actualEmployeeId}`);
+              }
+            }
+          } catch (error) {
+            logger.warn(`[AuthService] Could not fetch employee from database: ${error.message}`);
+          }
+        }
+      }
+
+      // Create user object with actual values
+      const userForToken = {
+        id: userId,
+        username: userUsername,
+        email: userEmail,
+        role: userRole,
+        employee_id: actualEmployeeId,
+      };
+
+      // Generate token
+      const token = this.generateToken(userForToken);
+
+      logger.info(`User logged in: ${userUsername} (${userRole}), employee_id: ${actualEmployeeId}`);
 
       return {
         token,
         user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          employeeId: user.employee_id,
+          id: userId,
+          username: userUsername,
+          email: userEmail,
+          role: userRole,
+          employeeId: actualEmployeeId,
         },
       };
     }

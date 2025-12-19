@@ -238,6 +238,12 @@ const seedData = async () => {
           employeeId: firstEmployee[0].id,
         });
         logger.info('Employee user created');
+      } else {
+        // Update existing employee user with correct employee_id if it's wrong
+        if (existingEmployeeUser.employee_id !== firstEmployee[0].id) {
+          await User.update(existingEmployeeUser.id, { employee_id: firstEmployee[0].id });
+          logger.info(`Employee user updated with correct employee_id: ${firstEmployee[0].id}`);
+        }
       }
     }
 

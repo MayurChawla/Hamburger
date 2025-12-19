@@ -7,14 +7,18 @@ class Employee {
    * Find employee by ID
    */
   static async findById(id) {
+    console.log('[Employee Model] Finding employee with ID:', id, 'Type:', typeof id);
     const employee = await queryOne(
       'SELECT * FROM employees WHERE id = ?',
       [id]
     );
 
     if (!employee) {
+      console.log('[Employee Model] Employee not found with ID:', id);
       return null;
     }
+    
+    console.log('[Employee Model] Employee found:', employee.name);
 
     // Get subjects
     const subjects = await query(
