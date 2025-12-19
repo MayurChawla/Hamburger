@@ -9,6 +9,11 @@ const EmployeeFilter = ({ filters, onFilterChange, onApply, onClear }) => {
           placeholder="Search by name..."
           value={filters.name}
           onChange={(e) => onFilterChange('name', e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              onApply();
+            }
+          }}
           className="filter-input"
         />
         <select
